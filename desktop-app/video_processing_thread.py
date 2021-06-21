@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import pyqtSignal, QThread
 from PyQt5.QtGui import QPixmap, QImage
 from db_conn import DbConnection
+from constants import *
 
 
 #######################################################################
@@ -71,11 +72,9 @@ class VideoCaptureThread(QThread):
         """
         # get current time, extract the date from and create the folder if it does not exist. Name the image with the time value
         time_taken = time.time()
-        current_date = time.strftime(
-            '%Y-%m-%d', time.localtime(int(time_taken)))
-        os.makedirs(self.resource_path(
-            'snapshots' + os.sep + current_date), exist_ok=True)
-        self.image_path = self.resource_path('snapshots' + os.sep + current_date + os.sep + str(camera_id) + '_' + str(time_taken) + '.jpg')
+        current_date = time.strftime('%Y-%m-%d', time.localtime(int(time_taken)))
+        os.makedirs(SNAPSHOTS_BASE_DIR + os.sep + current_date, exist_ok=True)
+        self.image_path = SNAPSHOTS_BASE_DIR + os.sep + current_date + os.sep + str(camera_id) + '_' + str(time_taken) + '.jpg'
         # enable snapshot
         self.snapshot = True
 
@@ -130,8 +129,8 @@ class VideoCaptureThread(QThread):
         time_taken = time.time()
         current_date = time.strftime(
             '%Y-%m-%d', time.localtime(int(time_taken)))
-        os.makedirs(self.resource_path('saved_videos' + os.sep + current_date), exist_ok=True)
-        self.video_path = self.resource_path('saved_videos' + os.sep + current_date + os.sep + str(camera_id) + '_' + str(time_taken) + '.avi')
+        os.makedirs(SAVED_VIDEOS_BASE_DIR + os.sep + current_date, exist_ok=True)
+        self.video_path = SAVED_VIDEOS_BASE_DIR + os.sep + current_date + os.sep + str(camera_id) + '_' + str(time_taken) + '.avi'
         # enable video recording
         self.save_video = True
         self.is_file_named = True
@@ -236,8 +235,7 @@ class VideoCaptureThread(QThread):
             # set the frame count for url stream sources
             self.frame_from_url_source = None
             # set loading image
-            self.change_pixmap.emit(
-                QPixmap(self.resource_path('icons' + os.sep + 'loading_vid.jpg')))
+            self.change_pixmap.emit(QPixmap(self.resource_path('icons' + os.sep + 'loading_vid.jpg')))
             # set model trained to false
             self.is_model_trained = False
             # prepare video capture
@@ -347,18 +345,15 @@ class VideoCaptureThread(QThread):
             # if the given stream source was url, check if any frame was retrieved. If not, display a unique error message
             if not str(self.camera_id).isdigit() and str(self.camera_id).startswith('http') or str(self.camera_id).startswith('rtsp'):
                 if not self.internet_conn_available():
-                    self.change_pixmap.emit(
-                        QPixmap(self.resource_path('icons' + os.sep + 'conn_error.jpg')))
+                    self.change_pixmap.emit(QPixmap(self.resource_path('icons' + os.sep + 'conn_error.jpg')))
                 elif self.frame_from_url_source is None:
-                    self.change_pixmap.emit(
-                        QPixmap(self.resource_path('icons' + os.sep + 'no_vid_error.jpg')))
+                    self.change_pixmap.emit(QPixmap(self.resource_path('icons' + os.sep + 'no_vid_error.jpg')))
                 else:
                     self.change_pixmap.emit(QPixmap(self.resource_path(
                         'icons' + os.sep + 'default_camera_view.png')))
             else:
                 # set restart image after video from camera or local file is done playing or stopped by user
-                self.change_pixmap.emit(QPixmap(self.resource_path(
-                    'icons' + os.sep + 'default_camera_view.png')))
+                self.change_pixmap.emit(QPixmap(self.resource_path('icons' + os.sep + 'default_camera_view.png')))
             # when the video stream is stopped, release the camera and its related resources
             if self.save_video:
                 self.video_writer.release()

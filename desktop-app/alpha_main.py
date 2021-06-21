@@ -3,7 +3,6 @@ import os
 import time
 import cv2
 import shutil
-import pickle
 from PyQt5.QtWidgets import (QStyleFactory, QApplication, QMainWindow, QMdiSubWindow, QMessageBox, QWidget,
                              QFileDialog, QDialog, QListWidgetItem, QInputDialog)
 from PyQt5.QtGui import QPixmap, QImage, QIcon
@@ -15,6 +14,7 @@ from video_processing_thread import VideoCaptureThread
 from video_player_main import VideoPlayer
 from add_new_stream_ui import Ui_addCameraDialog
 from mdi_content_ui import Ui_mdiSubWIndowContent
+from constants import *
 
 # set the GUI style
 QApplication.setStyle(QStyleFactory.create('Fusion'))
@@ -48,8 +48,7 @@ class Alpha(QMainWindow):
         self.ui.setupUi(self)
         # set window icon and title
         self.setWindowTitle('Alpha')
-        self.setWindowIcon(QIcon(self.resource_path(
-            'icons' + os.sep + 'alpha_icon.png')))
+        self.setWindowIcon(QIcon(self.resource_path('icons' + os.sep + 'alpha_icon.png')))
         # create the application directories if they do not exist
         self.prepare_dirs_for_app()
         # load the settings dictionary
@@ -62,23 +61,20 @@ class Alpha(QMainWindow):
             self.db_class = DbConnection()
             self.connection = self.db_class.connection
             self.cursor = self.db_class.cursor
-        except:
+        except Exception as e:
+            print(e)
             QMessageBox.critical(
                 self, 'SQL Error', 'Could not connect to database')
         # initialize add new stream class
         self.add_stream_dialog = AddNewStream(self.ui.mdiArea, MdiSubWindow, self.resource_path, self.tile_camera_view)
         # initialize the path to the photo
-        self.photo_path = self.resource_path(
-            'icons' + os.sep + 'default_profile_photo.png')
+        self.photo_path = self.resource_path('icons' + os.sep + 'default_profile_photo.png')
         # create an object to hold the image to print
         self.image_to_print = QImage(self.photo_path)
         # initialize the default photo for the image view gallery and load the images and videos if available
-        self.images_pixmap = QPixmap(self.resource_path(
-            'icons' + os.sep + 'no_image_available.png')).scaled(800, 600, Qt.KeepAspectRatio, Qt.FastTransformation)
-        self.play_video_image = cv2.imread(self.resource_path(
-            'icons' + os.sep + 'play_video.png'), cv2.COLOR_BGR2RGB)
-        self.video_thumbnails_pixmap = QPixmap(
-            self.resource_path('icons' + os.sep + 'no_video_available.jpg')).scaled(800, 600, Qt.KeepAspectRatio, Qt.FastTransformation)
+        self.images_pixmap = QPixmap(self.resource_path('icons' + os.sep + 'no_image_available.png')).scaled(800, 600, Qt.KeepAspectRatio, Qt.FastTransformation)
+        self.play_video_image = cv2.imread(self.resource_path('icons' + os.sep + 'play_video.png'), cv2.COLOR_BGR2RGB)
+        self.video_thumbnails_pixmap = QPixmap(self.resource_path('icons' + os.sep + 'no_video_available.jpg')).scaled(800, 600, Qt.KeepAspectRatio, Qt.FastTransformation)
         self.load_snapshots_on_start_up()
         self.load_video_thumbnails_on_start_up()
         # connect the toolbar actions to their methods
@@ -95,9 +91,9 @@ class Alpha(QMainWindow):
         This method ensures that all the required directories for running the application are available.
         If not it creates them
         """
-        required_dir_names = ['saved_videos', 'snapshots', 'databases']
-        for dir_name in required_dir_names:
-            os.makedirs(self.resource_path(dir_name), exist_ok=True)
+        required_dir_names = [SAVED_VIDEOS_BASE_DIR, SNAPSHOTS_BASE_DIR, DATABASES_BASE_DIR]
+        for dir_path in required_dir_names:
+            os.makedirs(dir_path, exist_ok=True)
 
 ####---------------------------------------------------------------------CONNECTION OF WIDGETS TO EVENTS-----------------------------------------------------------------------------####
 
@@ -333,20 +329,19 @@ class Alpha(QMainWindow):
             self.images_names = []
             self.image_items = []
             # get directory names into a list
-            for dir_name in os.listdir(self.resource_path('snapshots')):
+            for dir_name in os.listdir(SNAPSHOTS_BASE_DIR):
                 self.images_dir_names.append(dir_name)
             if len(self.images_dir_names) != 0:
                 self.images_dir_names.sort()
                 self.images_dir_names.reverse()
                 # set the date to the most recent
                 year, month, day = self.images_dir_names[0].split('-')
-                self.ui.selectImageDateEdit.setDate(
-                    QDate(int(year), int(month), int(day)))
+                self.ui.selectImageDateEdit.setDate(QDate(int(year), int(month), int(day)))
                 # add the available dates to the date list widget and select the most recent
                 self.ui.imagesDateListWidget.addItems(self.images_dir_names)
                 self.ui.imagesDateListWidget.setCurrentRow(0)
                 # get file names into a list
-                for file_name in os.listdir(self.resource_path('snapshots') + os.sep + self.images_dir_names[0]):
+                for file_name in os.listdir(SNAPSHOTS_BASE_DIR + os.sep + self.images_dir_names[0]):
                     self.images_names.append(file_name)
                 # set the files in the widget
                 if len(self.images_names) == 0:
@@ -359,8 +354,7 @@ class Alpha(QMainWindow):
                     for image in self.images_names:
                         item = QListWidgetItem(self.ui.imagesListWidget)
                         icon = QIcon()
-                        icon.addPixmap(QPixmap(self.resource_path(
-                            'snapshots' + os.sep + self.images_dir_names[0] + os.sep + image)), QIcon.Normal, QIcon.On)
+                        icon.addPixmap(QPixmap(SNAPSHOTS_BASE_DIR + os.sep + self.images_dir_names[0] + os.sep + image), QIcon.Normal, QIcon.On)
                         item.setIcon(icon)
                         self.image_items.append(item)
                     # set the grid size of image list widget and add the list widget item containing the list widget
@@ -391,15 +385,14 @@ class Alpha(QMainWindow):
                     QDate(int(year), int(month), int(day)))
                 # get file names and image items into a list
                 self.images_names.clear()
-                for file_name in os.listdir(self.resource_path('snapshots') + os.sep + self.images_dir_names[self.ui.imagesDateListWidget.currentRow()]):
+                for file_name in os.listdir(SNAPSHOTS_BASE_DIR + os.sep + self.images_dir_names[self.ui.imagesDateListWidget.currentRow()]):
                     self.images_names.append(file_name)
                 # set the files in the widget
                 if len(self.images_names) == 0:
                     self.image_items.clear()
                     item = QListWidgetItem(self.ui.imagesListWidget)
                     # if there is no image available, show the default image
-                    self.images_pixmap = QPixmap(self.resource_path(
-                        'icons' + os.sep + 'no_image_available.png')).scaled(800, 600, Qt.KeepAspectRatio, Qt.FastTransformation)
+                    self.images_pixmap = QPixmap(self.resource_path('icons' + os.sep + 'no_image_available.png')).scaled(800, 600, Qt.KeepAspectRatio, Qt.FastTransformation)
                     self.ui.currentImageLabel.setPixmap(self.images_pixmap)
                     # clear the image properties
                     self.ui.currentImageGroupBox.setTitle('FILE INFORMATION')
@@ -413,8 +406,7 @@ class Alpha(QMainWindow):
                     for image in self.images_names:
                         item = QListWidgetItem(self.ui.imagesListWidget)
                         icon = QIcon()
-                        icon.addPixmap(QPixmap(self.resource_path('snapshots' + os.sep + self.images_dir_names[self.ui.imagesDateListWidget.currentRow()] +
-                                                                  os.sep + image)), QIcon.Normal, QIcon.On)
+                        icon.addPixmap(QPixmap(SNAPSHOTS_BASE_DIR + os.sep + self.images_dir_names[self.ui.imagesDateListWidget.currentRow()] + os.sep + image), QIcon.Normal, QIcon.On)
                         item.setIcon(icon)
                         self.image_items.append(item)
                     # set the grid size of image list widget and add the list widget item containing the list widget
@@ -460,7 +452,7 @@ class Alpha(QMainWindow):
             # create an object to hold the directory names
             new_dir_names = []
             # get directory names into a list
-            for dir_name in os.listdir(self.resource_path('snapshots')):
+            for dir_name in os.listdir(SNAPSHOTS_BASE_DIR):
                 new_dir_names.append(dir_name)
             if len(new_dir_names) != 0:
                 new_dir_names.sort()
@@ -481,19 +473,17 @@ class Alpha(QMainWindow):
                     # load the files and select the most recent image
                     # get file names and image items into a list
                     self.images_names.clear()
-                    for file_name in os.listdir(self.resource_path('snapshots') + os.sep + self.images_dir_names[self.ui.imagesDateListWidget.currentRow()]):
+                    for file_name in os.listdir(SNAPSHOTS_BASE_DIR + os.sep + self.images_dir_names[self.ui.imagesDateListWidget.currentRow()]):
                         self.images_names.append(file_name)
                     # set the files in the widget
                     if len(self.images_names) == 0:
                         self.image_items.clear()
                         item = QListWidgetItem(self.ui.imagesListWidget)
                         # if there is no image available, show the default image
-                        self.images_pixmap = QPixmap(self.resource_path(
-                            'icons' + os.sep + 'no_image_available.png')).scaled(800, 600, Qt.KeepAspectRatio, Qt.FastTransformation)
+                        self.images_pixmap = QPixmap(self.resource_path('icons' + os.sep + 'no_image_available.png')).scaled(800, 600, Qt.KeepAspectRatio, Qt.FastTransformation)
                         self.ui.currentImageLabel.setPixmap(self.images_pixmap)
                         # clear the image properties
-                        self.ui.currentImageGroupBox.setTitle(
-                            'FILE INFORMATION')
+                        self.ui.currentImageGroupBox.setTitle('FILE INFORMATION')
                     else:
                         # sort the images from the most recently taken to the least recently taken
                         self.images_names.sort()
@@ -504,8 +494,7 @@ class Alpha(QMainWindow):
                         for image in self.images_names:
                             item = QListWidgetItem(self.ui.imagesListWidget)
                             icon = QIcon()
-                            icon.addPixmap(QPixmap(self.resource_path('snapshots' + os.sep + self.images_dir_names[self.ui.imagesDateListWidget.currentRow()] +
-                                                                      os.sep + image)), QIcon.Normal, QIcon.On)
+                            icon.addPixmap(QPixmap(SNAPSHOTS_BASE_DIR + os.sep + self.images_dir_names[self.ui.imagesDateListWidget.currentRow()] + os.sep + image), QIcon.Normal, QIcon.On)
                             item.setIcon(icon)
                             self.image_items.append(item)
                         # set the grid size of image list widget and add the list widget item containing the list widget
@@ -528,15 +517,14 @@ class Alpha(QMainWindow):
             if len(self.images_dir_names) != 0:
                 # get file names into a list
                 self.images_names.clear()
-                for file_name in os.listdir(self.resource_path('snapshots') + os.sep + self.images_dir_names[self.ui.imagesDateListWidget.currentRow()]):
+                for file_name in os.listdir(SNAPSHOTS_BASE_DIR + os.sep + self.images_dir_names[self.ui.imagesDateListWidget.currentRow()]):
                     self.images_names.append(file_name)
                 # set the files in the widget
                 if len(self.images_names) == 0:
                     self.image_items.clear()
                     item = QListWidgetItem(self.ui.imagesListWidget)
                     # if there is no image available, show the default image
-                    self.images_pixmap = QPixmap(self.resource_path(
-                        'icons' + os.sep + 'no_image_available.png')).scaled(800, 600, Qt.KeepAspectRatio, Qt.FastTransformation)
+                    self.images_pixmap = QPixmap(self.resource_path('icons' + os.sep + 'no_image_available.png')).scaled(800, 600, Qt.KeepAspectRatio, Qt.FastTransformation)
                     self.ui.currentImageLabel.setPixmap(self.images_pixmap)
                     # clear the image properties
                     self.ui.currentImageGroupBox.setTitle('FILE INFORMATION')
@@ -550,8 +538,7 @@ class Alpha(QMainWindow):
                     for image in self.images_names:
                         item = QListWidgetItem(self.ui.imagesListWidget)
                         icon = QIcon()
-                        icon.addPixmap(QPixmap(self.resource_path('snapshots' + os.sep + self.images_dir_names[self.ui.imagesDateListWidget.currentRow()] +
-                                                                  os.sep + image)), QIcon.Normal, QIcon.On)
+                        icon.addPixmap(QPixmap(SNAPSHOTS_BASE_DIR + os.sep + self.images_dir_names[self.ui.imagesDateListWidget.currentRow()] + os.sep + image), QIcon.Normal, QIcon.On)
                         item.setIcon(icon)
                         self.image_items.append(item)
                     # set the grid size of image list widget and add the list widget item containing the list widget
@@ -571,7 +558,7 @@ class Alpha(QMainWindow):
         try:
             # get directory names (dates) into a list
             self.images_dir_names.clear()
-            for dir_name in os.listdir(self.resource_path('snapshots')):
+            for dir_name in os.listdir(SNAPSHOTS_BASE_DIR):
                 self.images_dir_names.append(dir_name)
             if len(self.images_dir_names) != 0:
                 # sort the images from the most recently taken to the least recently taken
@@ -591,8 +578,7 @@ class Alpha(QMainWindow):
                 self.ui.imagesListWidget.clear()
                 self.images_dir_names.clear()
                 self.ui.imagesDateListWidget.clear()
-                self.images_pixmap = QPixmap(self.resource_path(
-                    'icons' + os.sep + 'no_image_available.png')).scaled(800, 600, Qt.KeepAspectRatio, Qt.FastTransformation)
+                self.images_pixmap = QPixmap(self.resource_path('icons' + os.sep + 'no_image_available.png')).scaled(800, 600, Qt.KeepAspectRatio, Qt.FastTransformation)
                 # clear the image properties
                 self.ui.currentImageGroupBox.setTitle('FILE INFORMATION')
         except IndexError:
@@ -615,7 +601,7 @@ class Alpha(QMainWindow):
                 # get the time from the splitted file name
                 time_taken = file_name_split[-1].split('.')[0]
                 # load the image and set it as the current image
-                self.images_pixmap = QPixmap('snapshots' + os.sep + self.images_dir_names[self.ui.imagesDateListWidget.currentRow()] +
+                self.images_pixmap = QPixmap(SNAPSHOTS_BASE_DIR + os.sep + self.images_dir_names[self.ui.imagesDateListWidget.currentRow()] +
                                              os.sep + image_file_name).scaled(800, 600, Qt.KeepAspectRatio, Qt.FastTransformation)
                 self.ui.currentImageLabel.setPixmap(self.images_pixmap)
                 # place the camera id of the camera used to capture the image and the time it was captured
@@ -705,18 +691,15 @@ class Alpha(QMainWindow):
             # get the extension
             file_ext = selected_image_file_name.split('.')[-1]
             # read the image as bytes
-            image_file = self.resource_path('snapshots' + os.sep + self.images_dir_names[self.ui.imagesDateListWidget.currentRow()] +
-                                            os.sep + selected_image_file_name)
+            image_file = SNAPSHOTS_BASE_DIR + os.sep + self.images_dir_names[self.ui.imagesDateListWidget.currentRow()] + os.sep + selected_image_file_name
             # show the save dialog
             options = QFileDialog.Options()
-            file_name, _ = QFileDialog.getSaveFileName(self, 'Save Selected Image', QDir.homePath(), 'Image File (*.' + file_ext + ')',
-                                                       options=options)
+            file_name, _ = QFileDialog.getSaveFileName(self, 'Save Selected Image', QDir.homePath(), 'Image File (*.' + file_ext + ')', options=options)
             # save a copy of the file
             if file_name:
                 file_name = file_name + '.' + file_ext
                 shutil.copyfile(image_file, file_name)
-                QMessageBox.information(
-                    self, 'Copy Completed', 'Successfully copied image to ' + file_name)
+                QMessageBox.information(self, 'Copy Completed', 'Successfully copied image to ' + file_name)
         except IndexError:
             pass
         except:
@@ -738,8 +721,7 @@ class Alpha(QMainWindow):
                 # get currently select image index
                 image_index = self.ui.imagesListWidget.currentRow()
                 # delete image
-                os.remove(self.resource_path('snapshots' + os.sep + self.images_dir_names[self.ui.imagesDateListWidget.currentRow()] +
-                                             os.sep + selected_image_file_name))
+                os.remove(SNAPSHOTS_BASE_DIR + os.sep + self.images_dir_names[self.ui.imagesDateListWidget.currentRow()] + os.sep + selected_image_file_name)
                 # refresh the images list widget
                 self.refresh_images_instantly()
                 # select the previous image if any else select the next image
@@ -762,8 +744,7 @@ class Alpha(QMainWindow):
             # get the selected directory name
             selected_dir_name = self.images_dir_names[self.ui.imagesDateListWidget.currentRow(
             )]
-            dir_file_count = len(os.listdir(self.resource_path(
-                'snapshots' + os.sep + selected_dir_name)))
+            dir_file_count = len(os.listdir(SNAPSHOTS_BASE_DIR + os.sep + selected_dir_name))
             if dir_file_count == 0:
                 ret_val = QMessageBox.question(
                     self, 'Delete directory', 'Delete ' + selected_dir_name + ' directory')
@@ -775,8 +756,7 @@ class Alpha(QMainWindow):
                 # get currently select image index
                 dir_index = self.ui.imagesDateListWidget.currentRow()
                 # delete image
-                shutil.rmtree(self.resource_path(
-                    'snapshots' + os.sep + selected_dir_name))
+                shutil.rmtree(SNAPSHOTS_BASE_DIR + os.sep + selected_dir_name)
                 # refresh the images list widget
                 self.refresh_image_dir_list_instantly()
                 # select the previous image if any else select the next image
@@ -802,9 +782,8 @@ class Alpha(QMainWindow):
             # delete after confirmation
             if ret_val == QMessageBox.Yes:
                 # delete recording date directories
-                for dir_name in os.listdir(self.resource_path('snapshots')):
-                    shutil.rmtree(self.resource_path(
-                        'snapshots' + os.sep + dir_name))
+                for dir_name in os.listdir(SNAPSHOTS_BASE_DIR):
+                    shutil.rmtree(SNAPSHOTS_BASE_DIR + os.sep + dir_name)
                 # refresh the recordings list widget
                 self.refresh_image_dir_list_instantly()
         except IndexError:
@@ -852,7 +831,7 @@ class Alpha(QMainWindow):
             self.videos_names = []
             self.video_items = []
             # get directory names into a list
-            for dir_name in os.listdir(self.resource_path('saved_videos')):
+            for dir_name in os.listdir(SAVED_VIDEOS_BASE_DIR):
                 self.videos_dir_names.append(dir_name)
             if len(self.videos_dir_names) != 0:
                 self.videos_dir_names.sort()
@@ -866,7 +845,7 @@ class Alpha(QMainWindow):
                 self.ui.videosDateListWidget.setCurrentRow(0)
 
                 # get file names into a list
-                for file_name in os.listdir(self.resource_path('saved_videos') + os.sep + self.videos_dir_names[0]):
+                for file_name in os.listdir(SAVED_VIDEOS_BASE_DIR + os.sep + self.videos_dir_names[0]):
                     self.videos_names.append(file_name)
                 # set the files in the widget
                 if len(self.videos_names) == 0:
@@ -881,8 +860,7 @@ class Alpha(QMainWindow):
                         item = QListWidgetItem(self.ui.videosListWidget)
                         icon = QIcon()
                         # load video thumbnails with video capture and set them as the icons
-                        vid_capture = cv2.VideoCapture(self.resource_path(
-                            'saved_videos' + os.sep + self.videos_dir_names[0] + os.sep + video))
+                        vid_capture = cv2.VideoCapture(SAVED_VIDEOS_BASE_DIR + os.sep + self.videos_dir_names[0] + os.sep + video)
                         ret, frame = vid_capture.read()
                         if ret:
                             frame = cv2.resize(frame, (800, 600))
@@ -917,8 +895,7 @@ class Alpha(QMainWindow):
         This method plays the selected video
         """
         try:
-            file_path = self.resource_path('saved_videos' + os.sep + self.videos_dir_names[self.ui.videosDateListWidget.currentRow()] +
-                                           os.sep + self.videos_names[self.ui.videosListWidget.currentRow()])
+            file_path = SAVED_VIDEOS_BASE_DIR + os.sep + self.videos_dir_names[self.ui.videosDateListWidget.currentRow()] + os.sep + self.videos_names[self.ui.videosListWidget.currentRow()]
             self.video_player.open_file(file_path)
             self.video_player.show()
         except:
@@ -929,8 +906,7 @@ class Alpha(QMainWindow):
         This method saves a copy of the currently selected video
         '''
         try:
-            video_file_path = self.resource_path('saved_videos' + os.sep + self.videos_dir_names[self.ui.videosDateListWidget.currentRow()] +
-                                                 os.sep + self.videos_names[self.ui.videosListWidget.currentRow()])
+            video_file_path = SAVED_VIDEOS_BASE_DIR + os.sep + self.videos_dir_names[self.ui.videosDateListWidget.currentRow()] + os.sep + self.videos_names[self.ui.videosListWidget.currentRow()]
             # get the extension
             file_ext = video_file_path.split('.')[-1]
             # show the save dialog
@@ -966,8 +942,7 @@ class Alpha(QMainWindow):
                     if not invalid_name:
                         if len(all_streaming_threads) < self.max_num_of_streams_allowed:
                             # get the file path
-                            video_file_path = self.resource_path('saved_videos' + os.sep + self.videos_dir_names[self.ui.videosDateListWidget.currentRow()] +
-                                                                 os.sep + self.videos_names[self.ui.videosListWidget.currentRow()])
+                            video_file_path = SAVED_VIDEOS_BASE_DIR + os.sep + self.videos_dir_names[self.ui.videosDateListWidget.currentRow()] + os.sep + self.videos_names[self.ui.videosListWidget.currentRow()]
                             # add the video stream
                             new_sub_win = MdiSubWindow(video_file_path, win_name, self.resource_path, self.ui.mdiArea)
                             self.ui.mdiArea.addSubWindow(new_sub_win)
@@ -1000,13 +975,12 @@ class Alpha(QMainWindow):
             # check if a video directory is available
             if len(self.videos_dir_names) != 0:
                 # set the date to the selected one
-                year, month, day = self.videos_dir_names[self.ui.videosDateListWidget.currentRow(
-                )].split('-')
+                year, month, day = self.videos_dir_names[self.ui.videosDateListWidget.currentRow()].split('-')
                 self.ui.selectVideoDateEdit.setDate(
                     QDate(int(year), int(month), int(day)))
                 # get file names and video items into a list
                 self.videos_names.clear()
-                for file_name in os.listdir(self.resource_path('saved_videos') + os.sep + self.videos_dir_names[self.ui.videosDateListWidget.currentRow()]):
+                for file_name in os.listdir(SAVED_VIDEOS_BASE_DIR + os.sep + self.videos_dir_names[self.ui.videosDateListWidget.currentRow()]):
                     self.videos_names.append(file_name)
                 # set the files in the widget
                 if len(self.videos_names) == 0:
@@ -1015,8 +989,7 @@ class Alpha(QMainWindow):
                     # if there is no video available, show the default video
                     self.video_thumbnails_pixmap = QPixmap(
                         self.resource_path('icons' + os.sep + 'no_video_available.jpg'))
-                    self.ui.currentVideoLabel.setPixmap(
-                        self.video_thumbnails_pixmap)
+                    self.ui.currentVideoLabel.setPixmap(self.video_thumbnails_pixmap)
                     # clear the video properties
                     self.ui.currentVideoGroupBox.setTitle('FILE INFORMATION')
                 else:
@@ -1029,8 +1002,7 @@ class Alpha(QMainWindow):
                     for video in self.videos_names:
                         item = QListWidgetItem(self.ui.videosListWidget)
                         icon = QIcon()
-                        vid_capture = cv2.VideoCapture(self.resource_path('saved_videos' + os.sep + self.videos_dir_names[self.ui.videosDateListWidget.currentRow()] +
-                                                                          os.sep + video))
+                        vid_capture = cv2.VideoCapture(SAVED_VIDEOS_BASE_DIR + os.sep + self.videos_dir_names[self.ui.videosDateListWidget.currentRow()] + os.sep + video)
                         ret, frame = vid_capture.read()
                         if ret:
                             frame = cv2.resize(frame, (800, 600))
@@ -1081,7 +1053,7 @@ class Alpha(QMainWindow):
             # create an object to hold the directory names
             new_dir_names = []
             # get directory names into a list
-            for dir_name in os.listdir(self.resource_path('saved_videos')):
+            for dir_name in os.listdir(SAVED_VIDEOS_BASE_DIR):
                 new_dir_names.append(dir_name)
             if len(new_dir_names) != 0:
                 new_dir_names.sort()
@@ -1102,7 +1074,7 @@ class Alpha(QMainWindow):
                     # load the files and select the most recent video
                     # get file names and video items into a list
                     self.videos_names.clear()
-                    for file_name in os.listdir(self.resource_path('saved_videos') + os.sep + self.videos_dir_names[self.ui.videosDateListWidget.currentRow()]):
+                    for file_name in os.listdir(SAVED_VIDEOS_BASE_DIR + os.sep + self.videos_dir_names[self.ui.videosDateListWidget.currentRow()]):
                         self.videos_names.append(file_name)
                     # set the files in the widget
                     if len(self.videos_names) == 0:
@@ -1126,8 +1098,7 @@ class Alpha(QMainWindow):
                         for video in self.videos_names:
                             item = QListWidgetItem(self.ui.videosListWidget)
                             icon = QIcon()
-                            vid_capture = cv2.VideoCapture(self.resource_path('saved_videos' + os.sep + self.videos_dir_names[self.ui.videosDateListWidget.currentRow()] +
-                                                                              os.sep + video))
+                            vid_capture = cv2.VideoCapture(SAVED_VIDEOS_BASE_DIR + os.sep + self.videos_dir_names[self.ui.videosDateListWidget.currentRow()] + os.sep + video)
                             ret, frame = vid_capture.read()
                             if ret:
                                 frame = cv2.resize(frame, (800, 600))
@@ -1164,7 +1135,7 @@ class Alpha(QMainWindow):
             if len(self.videos_dir_names) != 0:
                 # get file names into a list
                 self.videos_names.clear()
-                for file_name in os.listdir(self.resource_path('saved_videos') + os.sep + self.videos_dir_names[self.ui.videosDateListWidget.currentRow()]):
+                for file_name in os.listdir(SAVED_VIDEOS_BASE_DIR + os.sep + self.videos_dir_names[self.ui.videosDateListWidget.currentRow()]):
                     self.videos_names.append(file_name)
                 # set the files in the widget
                 if len(self.videos_names) == 0:
@@ -1187,8 +1158,7 @@ class Alpha(QMainWindow):
                     for video in self.videos_names:
                         item = QListWidgetItem(self.ui.videosListWidget)
                         icon = QIcon()
-                        vid_capture = cv2.VideoCapture(self.resource_path('saved_videos' + os.sep + self.videos_dir_names[self.ui.videosDateListWidget.currentRow()] +
-                                                                          os.sep + video))
+                        vid_capture = cv2.VideoCapture(SAVED_VIDEOS_BASE_DIR + os.sep + self.videos_dir_names[self.ui.videosDateListWidget.currentRow()] + os.sep + video)
                         ret, frame = vid_capture.read()
                         if ret:
                             frame = cv2.resize(frame, (800, 600))
@@ -1221,7 +1191,7 @@ class Alpha(QMainWindow):
         try:
             # get directory names (dates) into a list
             self.videos_dir_names.clear()
-            for dir_name in os.listdir(self.resource_path('saved_videos')):
+            for dir_name in os.listdir(SAVED_VIDEOS_BASE_DIR):
                 self.videos_dir_names.append(dir_name)
             if len(self.videos_dir_names) != 0:
                 # sort the videos from the most recently taken to the least recently taken
@@ -1240,10 +1210,8 @@ class Alpha(QMainWindow):
                 self.ui.videosListWidget.clear()
                 self.videos_dir_names.clear()
                 self.ui.videosDateListWidget.clear()
-                self.video_thumbnails_pixmap = QPixmap(
-                    self.resource_path('icons' + os.sep + 'no_video_available.jpg'))
-                self.ui.currentVideoLabel.setPixmap(
-                    self.video_thumbnails_pixmap)
+                self.video_thumbnails_pixmap = QPixmap(self.resource_path('icons' + os.sep + 'no_video_available.jpg'))
+                self.ui.currentVideoLabel.setPixmap(self.video_thumbnails_pixmap)
                 # clear the video properties
                 self.ui.currentVideoGroupBox.setTitle('FILE INFORMATION')
         except IndexError:
@@ -1266,8 +1234,7 @@ class Alpha(QMainWindow):
                 # get the time from the splitted file name
                 time_taken = file_name_split[-1].split('.')[0]
                 # load the video thumbnail and set it as the current video
-                vid_capture = cv2.VideoCapture(self.resource_path('saved_videos' + os.sep + self.videos_dir_names[self.ui.videosDateListWidget.currentRow()] +
-                                                                  os.sep + video_file_name))
+                vid_capture = cv2.VideoCapture(SAVED_VIDEOS_BASE_DIR + os.sep + self.videos_dir_names[self.ui.videosDateListWidget.currentRow()] + os.sep + video_file_name)
                 ret, frame = vid_capture.read()
                 if ret:
                     frame = cv2.resize(frame, (800, 600))
@@ -1275,13 +1242,11 @@ class Alpha(QMainWindow):
                     img_width = rgb_image.shape[1]
                     img_height = rgb_image.shape[0]
                     self.embed_play_icon(rgb_image, img_width, img_height)
-                    qimage = QImage(rgb_image.data, img_width,
-                                    img_height, QImage.Format_RGB888)
+                    qimage = QImage(rgb_image.data, img_width, img_height, QImage.Format_RGB888)
                     qpixmap = QPixmap.fromImage(qimage)
                     vid_capture.release()
                     self.videos_thumbnails_pixmap = qpixmap
-                    self.ui.currentVideoLabel.setPixmap(
-                        self.videos_thumbnails_pixmap)
+                    self.ui.currentVideoLabel.setPixmap(self.videos_thumbnails_pixmap)
                     # place the camera id of the camera used to capture the video and the time it was captured
                     self.ui.currentVideoGroupBox.setTitle('SOURCE ID: ' + camera_id + '\t\t|\t\t' + 'TIME OF CAPTURE: ' +
                                                           time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(int(time_taken))))
@@ -1373,8 +1338,7 @@ class Alpha(QMainWindow):
                 # get currently select video index
                 video_index = self.ui.videosListWidget.currentRow()
                 # delete video
-                os.remove(self.resource_path('saved_videos' + os.sep + self.videos_dir_names[self.ui.videosDateListWidget.currentRow()] +
-                                             os.sep + selected_video_file_name))
+                os.remove(SAVED_VIDEOS_BASE_DIR + os.sep + self.videos_dir_names[self.ui.videosDateListWidget.currentRow()] + os.sep + selected_video_file_name)
                 # refresh the videos list widget
                 self.refresh_videos_instantly()
                 # select the previous video if any else select the next video
@@ -1397,8 +1361,7 @@ class Alpha(QMainWindow):
             # get the selected directory name
             selected_dir_name = self.videos_dir_names[self.ui.videosDateListWidget.currentRow(
             )]
-            dir_file_count = len(os.listdir(self.resource_path(
-                'saved_videos' + os.sep + selected_dir_name)))
+            dir_file_count = len(os.listdir(SAVED_VIDEOS_BASE_DIR + os.sep + selected_dir_name))
             if dir_file_count == 0:
                 ret_val = QMessageBox.question(
                     self, 'Delete directory', 'Delete ' + selected_dir_name + ' directory')
@@ -1410,8 +1373,7 @@ class Alpha(QMainWindow):
                 # get currently selected video index
                 dir_index = self.ui.videosDateListWidget.currentRow()
                 # delete video
-                shutil.rmtree(self.resource_path(
-                    'saved_videos' + os.sep + selected_dir_name))
+                shutil.rmtree(SAVED_VIDEOS_BASE_DIR + os.sep + selected_dir_name)
                 # refresh the videos list widget
                 self.refresh_video_dir_list_instantly()
                 # select the previous image if any else select the next video
@@ -1437,9 +1399,8 @@ class Alpha(QMainWindow):
             # delete after confirmation
             if ret_val == QMessageBox.Yes:
                 # delete recording date directories
-                for dir_name in os.listdir(self.resource_path('saved_videos')):
-                    shutil.rmtree(self.resource_path(
-                        'saved_videos' + os.sep + dir_name))
+                for dir_name in os.listdir(SAVED_VIDEOS_BASE_DIR):
+                    shutil.rmtree(SAVED_VIDEOS_BASE_DIR + os.sep + dir_name)
                 # refresh the recordings list widget
                 self.refresh_video_dir_list_instantly()
         except IndexError:
@@ -1565,8 +1526,7 @@ class MdiSubWindow(QMdiSubWindow, QWidget):
         self.ui.sourceIdLabel.setText(self.sub_win_name)
         # self.setWindowTitle(self.sub_win_name)
         # initialize the video capture thread
-        self.vid_cap_thread = VideoCaptureThread(
-            camera_id, win_name, self.resource_path)
+        self.vid_cap_thread = VideoCaptureThread(camera_id, win_name, self.resource_path)
         # add the thread to the list of video streaming threads
         all_streaming_threads.append(self.vid_cap_thread)
         # create connection and cursor to database
@@ -1739,8 +1699,7 @@ class AddNewStream(QDialog):
         # set maximum number of streams allowed
         self.max_num_of_streams_allowed = 100
         # set window icon
-        self.setWindowIcon(QIcon(self.resource_path(
-            'icons' + os.sep + 'alpha_icon.png')))
+        self.setWindowIcon(QIcon(self.resource_path('icons' + os.sep + 'alpha_icon.png')))
         # load cameras into combobox
         self.load_usb_cameras()
         # connect buttons to actions
