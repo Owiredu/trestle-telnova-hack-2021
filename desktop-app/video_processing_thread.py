@@ -2,17 +2,11 @@ import os
 import time
 import cv2
 import socket
-import requests
 import numpy
-import pickle
-import pygame.mixer  # , dlib
-from threading import Thread
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import pyqtSignal, QThread
 from PyQt5.QtGui import QPixmap, QImage
 from db_conn import DbConnection
-from facenet_pytorch import MTCNN
-import torch
 
 
 #######################################################################
