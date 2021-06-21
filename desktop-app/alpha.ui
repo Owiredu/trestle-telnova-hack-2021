@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>953</width>
-    <height>589</height>
+    <height>590</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -832,7 +832,7 @@ QPushButton::pressed {
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>768</width>
+             <width>104</width>
              <height>132</height>
             </rect>
            </property>
@@ -1089,7 +1089,7 @@ color: rgb(115, 210, 22);</string>
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>768</width>
+             <width>104</width>
              <height>132</height>
             </rect>
            </property>
@@ -2109,7 +2109,7 @@ QToolBar QToolButton::checked {
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>icons/all_facial_recognitions.png</normaloff>icons/all_facial_recognitions.png</iconset>
+     <normaloff>icons/motion_detection.png</normaloff>icons/motion_detection.png</iconset>
    </property>
    <property name="text">
     <string>All People Counters</string>

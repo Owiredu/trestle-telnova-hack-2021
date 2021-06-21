@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(953, 589)
+        MainWindow.resize(953, 590)
         MainWindow.setMinimumSize(QtCore.QSize(0, 0))
         MainWindow.setStyleSheet("* {\n"
 "    color: rgb(255, 255, 255);\n"
@@ -422,7 +422,7 @@ class Ui_MainWindow(object):
         self.scrollArea_2.setWidgetResizable(True)
         self.scrollArea_2.setObjectName("scrollArea_2")
         self.scrollAreaWidgetContents_2 = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(0, 0, 768, 132))
+        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(0, 0, 104, 132))
         self.scrollAreaWidgetContents_2.setObjectName("scrollAreaWidgetContents_2")
         self.gridLayout_11 = QtWidgets.QGridLayout(self.scrollAreaWidgetContents_2)
         self.gridLayout_11.setContentsMargins(0, 0, 0, 0)
@@ -522,7 +522,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 768, 132))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 104, 132))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.gridLayout_7 = QtWidgets.QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout_7.setContentsMargins(0, 0, 0, 0)
@@ -928,7 +928,7 @@ class Ui_MainWindow(object):
         self.actionAll_People_Counters = QtWidgets.QAction(MainWindow)
         self.actionAll_People_Counters.setCheckable(True)
         icon16 = QtGui.QIcon()
-        icon16.addPixmap(QtGui.QPixmap("icons/all_facial_recognitions.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon16.addPixmap(QtGui.QPixmap("icons/motion_detection.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionAll_People_Counters.setIcon(icon16)
         self.actionAll_People_Counters.setObjectName("actionAll_People_Counters")
         self.actionAll_Snapshots = QtWidgets.QAction(MainWindow)
