@@ -53,8 +53,7 @@ class Alpha(QMainWindow):
         # create the application directories if they do not exist
         self.prepare_dirs_for_app()
         # load the settings dictionary
-        self.max_num_of_streams_allowed = 4
-        self.load_settings()
+        self.max_num_of_streams_allowed = 100
         # set the camera view mode as default
         self.ui.stackedWidget.setCurrentWidget(self.ui.cameraViewPage)
         # initialize database class
@@ -90,20 +89,6 @@ class Alpha(QMainWindow):
         self.video_player = VideoPlayer()
         # arrange the mdi window in the tiled mode as default
         self.tile_camera_view()
-
-    def load_settings(self):
-        """
-        This method loads the settings
-        """
-        try:
-            # load the settings dictionary
-            settings_file = open(self.resource_path('settings.pkl'), 'rb')
-            settings_obj = settings_file.read()
-            settings_dict = pickle.loads(settings_obj)
-            # set the values
-            self.max_num_of_streams_allowed = settings_dict['max_streams']
-        except:
-            QMessageBox.critical(self, 'Error', 'Failed to load settings')
 
     def prepare_dirs_for_app(self):
         """
@@ -322,8 +307,6 @@ class Alpha(QMainWindow):
         """
         This method opens the dialog for adding new video stream
         """
-        # load settings
-        self.load_settings()
         if len(all_streaming_threads) < self.max_num_of_streams_allowed:
             self.add_stream_dialog.show()
         else:
@@ -1753,9 +1736,8 @@ class AddNewStream(QDialog):
         self.mdi_sub_win = mdi_sub_win_obj
         self.resource_path = resource_path_func
         self.tile_window_view = tile_window_view_func
-        # load settings
-        self.max_num_of_streams_allowed = 4
-        self.load_settings()
+        # set maximum number of streams allowed
+        self.max_num_of_streams_allowed = 100
         # set window icon
         self.setWindowIcon(QIcon(self.resource_path(
             'icons' + os.sep + 'alpha_icon.png')))
@@ -1769,27 +1751,11 @@ class AddNewStream(QDialog):
         # set the multiple streams list separator
         self.multi_streams_list_sep = '||$$^^&&**||'
 
-    def load_settings(self):
-        """
-        This method loads the settings
-        """
-        try:
-            # load the settings dictionary
-            settings_file = open(self.resource_path('settings.pkl'), 'rb')
-            settings_obj = settings_file.read()
-            settings_dict = pickle.loads(settings_obj)
-            # set the values
-            self.max_num_of_streams_allowed = settings_dict['max_streams']
-        except:
-            QMessageBox.critical(self, 'Error', 'Failed to load settings')
-
     def get_new_stream_source(self):
         """
         This method adds the selected video stream to the camera view
         """
         if self.ui.streamNameField.text().strip() != '':
-            # load settings
-            self.load_settings()
             if len(all_streaming_threads) < self.max_num_of_streams_allowed:
                 # check if invalid symbols are present in the name of the stream
                 unaccepted_naming_chars = ['/', '\\', '\\\\', '//']
