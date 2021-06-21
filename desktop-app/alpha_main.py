@@ -61,8 +61,7 @@ class Alpha(QMainWindow):
             self.db_class = DbConnection()
             self.connection = self.db_class.connection
             self.cursor = self.db_class.cursor
-        except Exception as e:
-            print(e)
+        except:
             QMessageBox.critical(
                 self, 'SQL Error', 'Could not connect to database')
         # initialize add new stream class
