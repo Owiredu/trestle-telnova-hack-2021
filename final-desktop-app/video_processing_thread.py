@@ -484,7 +484,7 @@ class VideoCaptureThread(QThread):
                             ("Exit", self.total_up),
                             ("Enter", self.total_down),
                             ("Status", status),
-                            ("Total people inside", str(self.x))
+                            ("Total people inside", sum(self.x))
                         ]
 
                         # Display the output
@@ -545,7 +545,7 @@ class VideoCaptureThread(QThread):
                     # save video to file
                     if self.is_color():
                         # write the colored frame and write the time on it
-                        frame_to_save = frame.copy()
+                        frame_to_save = rgb_image.copy()
                         self.save_video_stream_to_file(frame_to_save)
                     else:
                         # write the grayscaled frame and write the time on it
