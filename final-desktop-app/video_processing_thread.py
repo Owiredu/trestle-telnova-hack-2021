@@ -78,7 +78,7 @@ class VideoCaptureThread(QThread):
         self.prev_logger_data = {
             'date_id': '',
             'cam_id': '',
-            'cam_data': {'enter': 0, 'exit': 0, 'current_in': 0}
+            'cam_data': {'in': 0, 'out': 0, 'cur_in': 0}
         }
 
     def prep_video_capture(self, buffer_size=10):  # argument types: int, int
