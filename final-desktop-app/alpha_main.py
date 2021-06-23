@@ -12,6 +12,7 @@ from alpha_ui import Ui_MainWindow
 from db_conn import DbConnection
 from video_processing_thread import VideoCaptureThread
 from logger_thread import LoggerThread
+from post_update_thread import PostUpdateThread
 from video_player_main import VideoPlayer
 from add_new_stream_ui import Ui_addCameraDialog
 from mdi_content_ui import Ui_mdiSubWIndowContent
@@ -27,6 +28,9 @@ all_video_subwins = []
 # initialize the logger thread
 logger_thread = LoggerThread()
 logger_thread.start()
+# initialize the update post thread
+post_update_thread = PostUpdateThread()
+post_update_thread.start()
 
 # SAMPLE VIDEO LINKS (These are free links and may be unavailable at any time:
 # 1. http://wmccpinetop.axiscam.net/mjpg/video.mjpg

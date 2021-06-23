@@ -1,11 +1,9 @@
 import os
 import sys
-import csv
 from datetime import datetime
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import pyqtSignal, QThread
 from queue import Queue
-from itertools import zip_longest
 from constants import *
 
 
@@ -33,11 +31,8 @@ class LoggerThread(QThread):
         """
         export_data = self.dequeue()
         print(export_data)
-        # TODO: save as a json file
-        # with open(DATABASES_BASE_DIR + os.sep + export_data['date_id'] + '.csv', 'a') as myfile:
-        #     wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
-        #     wr.writerow(("Timestamp", "In", "Out", "Inside"))
-        #     wr.writerow(export_data['cam_data'].values())
+        # create the update notifier file
+        open(DATABASES_BASE_DIR + os.sep + export_data['year'] + UPDATE_NOTIFIER_EXTENSION)
 
     def run(self):
         while True:

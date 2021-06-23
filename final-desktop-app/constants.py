@@ -29,3 +29,12 @@ CLASSES = [
 # 	'cam_id': '',
 # 	'cam_data': {'enter': 0, 'exit': 0, 'current_in': 0}
 # }
+
+# update wait time for waiting after a successful update and before the next update post
+UPDATE_WAIT_TIME = 20 # seconds
+
+# update retry time for retrying if update failes
+UPDATE_RETRY_TIME = 3 # seconds
+
+# update notifier extension
+UPDATE_NOTIFIER_EXTENSION = '.new'

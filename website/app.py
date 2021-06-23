@@ -43,8 +43,10 @@ def get_update():
         base_dir = os.path.dirname(__file__)
         folder = "static" + os.sep + "count_data"
         data_dir = os.path.join(base_dir, folder)
-        now = datetime.now()
-        json_file_path = os.path.join(data_dir, f"{now.year}.json")
+        year = list(json_data.keys())[0]
+        json_file_path = os.path.join(data_dir, f"{year}.json")
+        # remove year from json data and keep only the month, day and camera data since year no more needed
+        json_data = json_data[year]
         # create the data holder dictionary
         data = dict()
         # get the month and day from the data received from the post
