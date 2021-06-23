@@ -22,3 +22,10 @@ CLASSES = [
 	"dog", "horse", "motorbike", "person", "pottedplant", "sheep",
 	"sofa", "train", "tvmonitor"
     ]
+
+# format for the logger data transmitted from the video thread to the logger thread
+# logger_data = {
+# 	'date_id': '',
+# 	'cam_id': '',
+# 	'cam_data': {'enter': 0, 'exit': 0, 'current_in': 0}
+# }

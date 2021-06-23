@@ -8,12 +8,10 @@ from PyQt5.QtCore import pyqtSignal, QThread
 from PyQt5.QtGui import QPixmap, QImage
 from mylib.centroidtracker import CentroidTracker
 from mylib.trackableobject import TrackableObject
-from imutils.video import VideoStream
 from imutils.video import FPS
 from mylib.mailer import Mailer
-from mylib import config, thread
-import schedule, csv
-import imutils
+from mylib import config
+import csv
 import dlib, datetime
 from itertools import zip_longest
 from db_conn import DbConnection
@@ -29,6 +27,7 @@ class VideoCaptureThread(QThread):
     """
 
     change_pixmap = pyqtSignal(QPixmap, name='change_pixmap')
+    send_logger_data = pyqtSignal(dict, name='send_logger_data')
 
     # argument types: String or int, String, Function
     def __init__(self, camera_id, camera_id_for_db, resource_path_func):
@@ -75,6 +74,12 @@ class VideoCaptureThread(QThread):
         # define prescribed maximum width and height of frames
         self.desired_width = 500
         self.desired_height = 400
+        # initialize the previously logged data
+        self.prev_logger_data = {
+            'date_id': '',
+            'cam_id': '',
+            'cam_data': {'enter': 0, 'exit': 0, 'current_in': 0}
+        }
 
     def prep_video_capture(self, buffer_size=10):  # argument types: int, int
         """
@@ -385,6 +390,8 @@ class VideoCaptureThread(QThread):
                                     # utilize it during skip frames
                                     self.trackers.append(tracker)
 
+                                QApplication.processEvents()
+
                         # otherwise, we should utilize our object *trackers* rather than
                         # object *detectors* to obtain a higher frame processing throughput
                         else:
@@ -406,6 +413,8 @@ class VideoCaptureThread(QThread):
 
                                 # add the bounding box coordinates to the rectangles list
                                 rects.append((startX, startY, endX, endY))
+
+                                QApplication.processEvents()
                         
                         # draw a horizontal line in the center of the frame -- once an
                         # object crosses this line we will determine whether they were
@@ -479,6 +488,8 @@ class VideoCaptureThread(QThread):
                             self.putText(frame, text, (centroid[0] - 10, centroid[1] - 10))
                             self.circle(frame, (centroid[0], centroid[1]), 4)
 
+                            QApplication.processEvents()
+
                         # construct a tuple of information we will be displaying on the
                         info = [
                             ("Exit", self.total_up),
@@ -492,16 +503,33 @@ class VideoCaptureThread(QThread):
                             text = "{}: {}".format(k, v)
                             self.putText(frame, text, (10, self.desired_height - ((i * 20) + 20)))
 
-                        # Initiate a simple log to save data at end of the day
-                        if config.Log:
-                            datetime_e = [datetime.datetime.now()]
-                            d = [datetime_e, self.empty1, self.empty, self.x]
-                            export_data = zip_longest(*d, fillvalue = '')
+                            QApplication.processEvents()
 
-                            with open(DATABASES_BASE_DIR + os.sep + 'Log.csv', 'w', newline='') as myfile:
-                                wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
-                                wr.writerow(("End Time", "In", "Out", "Total Inside"))
-                                wr.writerows(export_data)
+                        # send current log data to the main thread to be saved
+                        now = datetime.datetime.now()
+                        cur_date = f'{now.year}_{now.month}_{now.day}'
+                        export_data = {
+                            'timestamp': now.ctime(), 
+                            'in': self.total_down, 
+                            'out': self.total_up, 
+                            'cur_in': sum(self.x)
+                        }
+                        logger_data = dict()
+                        logger_data['date_id'] = cur_date
+                        logger_data['cam_id'] = self.camera_id_for_db
+                        logger_data['cam_data'] = export_data
+                        # check if the current log data is the same as the previous
+                        same = all(
+                            [
+                                self.prev_logger_data['cam_data']['in'] == logger_data['cam_data']['in'],
+                                self.prev_logger_data['cam_data']['out'] == logger_data['cam_data']['out'],
+                                self.prev_logger_data['cam_data']['cur_in'] == logger_data['cam_data']['cur_in']
+                            ]
+                        )
+                        # send log data if it is different from the previous one
+                        if not same:
+                            self.send_logger_data.emit(logger_data)
+                            self.prev_logger_data = logger_data
 
                         # increment the total number of frames processed thus far and
                         # then update the FPS counter
@@ -583,6 +611,8 @@ class VideoCaptureThread(QThread):
                     self.stop_saving_vid_to_disk()
                     self.abort_snapshot()
                     self.stop_capture()
+
+                QApplication.processEvents()
 
             # if the given stream source was url, check if any frame was retrieved. If not, display a unique error message
             if not str(self.camera_id).isdigit() and str(self.camera_id).startswith('http') or str(self.camera_id).startswith('rtsp'):

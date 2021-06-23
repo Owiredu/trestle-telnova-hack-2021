@@ -11,6 +11,7 @@ from PyQt5.QtMultimedia import QCameraInfo
 from alpha_ui import Ui_MainWindow
 from db_conn import DbConnection
 from video_processing_thread import VideoCaptureThread
+from logger_thread import LoggerThread
 from video_player_main import VideoPlayer
 from add_new_stream_ui import Ui_addCameraDialog
 from mdi_content_ui import Ui_mdiSubWIndowContent
@@ -23,6 +24,9 @@ QApplication.setStyle(QStyleFactory.create('Fusion'))
 all_streaming_threads = []
 # store instances of all video subwindows
 all_video_subwins = []
+# initialize the logger thread
+logger_thread = LoggerThread()
+logger_thread.start()
 
 # SAMPLE VIDEO LINKS (These are free links and may be unavailable at any time:
 # 1. http://wmccpinetop.axiscam.net/mjpg/video.mjpg
@@ -1526,6 +1530,7 @@ class MdiSubWindow(QMdiSubWindow, QWidget):
         # self.setWindowTitle(self.sub_win_name)
         # initialize the video capture thread
         self.vid_cap_thread = VideoCaptureThread(camera_id, win_name, self.resource_path)
+        self.vid_cap_thread.send_logger_data.connect(self.handle_logger_data)
         # add the thread to the list of video streaming threads
         all_streaming_threads.append(self.vid_cap_thread)
         # create connection and cursor to database
@@ -1544,8 +1549,7 @@ class MdiSubWindow(QMdiSubWindow, QWidget):
         self.ui.displayLabel.setPixmap(
             QPixmap(self.resource_path('icons' + os.sep + 'default_camera_view.png')))
         # set the image returned by the signal to the label
-        self.vid_cap_thread.change_pixmap.connect(
-            self.ui.displayLabel.setPixmap)
+        self.vid_cap_thread.change_pixmap.connect(self.ui.displayLabel.setPixmap)
         self.previously_recognized_id = ''
         # add the root layout from the generated code to parent widget
         self.widget_parent.setLayout(self.ui.gridLayout)
@@ -1570,6 +1574,13 @@ class MdiSubWindow(QMdiSubWindow, QWidget):
         # hide and show the options frame when the display label is double clicked
         self.frame_hidden = False   # monitor if frame is hidden or not
         self.ui.displayLabel.mouseDoubleClickEvent = self.hide_options_frame
+
+    def handle_logger_data(self, send_logger_data_signal):
+        """
+        Handles the logger from the video threads
+        """
+        # add the data to the logger thread's queue
+        logger_thread.enqueue(send_logger_data_signal)
 
     def start_capture(self):
         """
