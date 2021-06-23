@@ -76,9 +76,12 @@ class VideoCaptureThread(QThread):
         self.desired_height = 400
         # initialize the previously logged data
         self.prev_logger_data = {
-            'date_id': '',
+            'timestamp': '',
+            'year': '',
+            'month': '',
+            'day': '',
             'cam_id': '',
-            'cam_data': {'in': 0, 'out': 0, 'cur_in': 0}
+            'cam_data': {'in': 0, 'out': 0}
         }
 
     def prep_video_capture(self, buffer_size=10):  # argument types: int, int
@@ -501,29 +504,28 @@ class VideoCaptureThread(QThread):
                         # Display the output
                         for (i, (k, v)) in enumerate(info):
                             text = "{}: {}".format(k, v)
-                            self.putText(frame, text, (10, self.desired_height - ((i * 20) + 20)))
+                            self.putText(frame, text, (10, self.desired_height - ((i * 20) + 30)))
 
                             QApplication.processEvents()
 
                         # send current log data to the main thread to be saved
                         now = datetime.datetime.now()
-                        cur_date = f'{now.year}_{now.month}_{now.day}'
                         export_data = {
-                            'timestamp': now.ctime(), 
                             'in': self.total_down, 
-                            'out': self.total_up, 
-                            'cur_in': sum(self.x)
+                            'out': self.total_up
                         }
                         logger_data = dict()
-                        logger_data['date_id'] = cur_date
+                        logger_data['timestamp'] = now.ctime()
+                        logger_data['year'] = str(now.year)
+                        logger_data['month'] = str(now.month)
+                        logger_data['day'] = str(now.day)
                         logger_data['cam_id'] = self.camera_id_for_db
                         logger_data['cam_data'] = export_data
                         # check if the current log data is the same as the previous
                         same = all(
                             [
                                 self.prev_logger_data['cam_data']['in'] == logger_data['cam_data']['in'],
-                                self.prev_logger_data['cam_data']['out'] == logger_data['cam_data']['out'],
-                                self.prev_logger_data['cam_data']['cur_in'] == logger_data['cam_data']['cur_in']
+                                self.prev_logger_data['cam_data']['out'] == logger_data['cam_data']['out']
                             ]
                         )
                         # send log data if it is different from the previous one
@@ -547,27 +549,6 @@ class VideoCaptureThread(QThread):
                         # self.fps_estimator.stop()
                         # print("[INFO] elapsed time: {:.2f}".format(self.fps_estimator.elapsed()))
                         # print("[INFO] approx. FPS: {:.2f}".format(self.fps_estimator.fps()))
-
-                    #########
-                    # embed time in frame if enabled
-                    if self.time_visible:
-                        # create black background
-                        if self.is_color():
-                            rgb_image[rgb_image.shape[0]-18:rgb_image.shape[0],
-                                      0:62] = self.black_surface_colored
-                            # write time
-                            cv2.putText(rgb_image, time.strftime('%H:%M:%S', time.localtime(time.time())),
-                                        (2, rgb_image.shape[0] -
-                                         5), cv2.FONT_HERSHEY_SIMPLEX,
-                                        0.4, (255, 255, 255), 1, cv2.LINE_AA)
-                        else:
-                            gray_image[gray_image.shape[0]-18:gray_image.shape[0],
-                                       0:62] = self.black_surface_grayscale
-                            # write time
-                            cv2.putText(gray_image, time.strftime('%H:%M:%S', time.localtime(time.time())),
-                                        (2, gray_image.shape[0] -
-                                         5), cv2.FONT_HERSHEY_SIMPLEX,
-                                        0.4, (255, 255, 255), 1, cv2.LINE_AA)
 
                     #########
                     # save video to file
@@ -594,6 +575,27 @@ class VideoCaptureThread(QThread):
                         # convert the bgr image into a pyqt image
                         qimage = QImage(
                             rgb_image.data, rgb_image.shape[1], rgb_image.shape[0], QImage.Format_RGB888)
+
+                    #########
+                    # embed time in frame if enabled
+                    if self.time_visible:
+                        # create black background
+                        if self.is_color():
+                            rgb_image[rgb_image.shape[0]-18:rgb_image.shape[0],
+                                      0:62] = self.black_surface_colored
+                            # write time
+                            cv2.putText(rgb_image, time.strftime('%H:%M:%S', time.localtime(time.time())),
+                                        (2, rgb_image.shape[0] -
+                                         5), cv2.FONT_HERSHEY_SIMPLEX,
+                                        0.4, (255, 255, 255), 1, cv2.LINE_AA)
+                        else:
+                            gray_image[gray_image.shape[0]-18:gray_image.shape[0],
+                                       0:62] = self.black_surface_grayscale
+                            # write time
+                            cv2.putText(gray_image, time.strftime('%H:%M:%S', time.localtime(time.time())),
+                                        (2, gray_image.shape[0] -
+                                         5), cv2.FONT_HERSHEY_SIMPLEX,
+                                        0.4, (255, 255, 255), 1, cv2.LINE_AA)
                     
                     # create the QPixmap from the QImage
                     qpixmap = QPixmap.fromImage(qimage)
