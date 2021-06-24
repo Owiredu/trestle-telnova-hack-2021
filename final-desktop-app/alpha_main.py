@@ -1483,8 +1483,6 @@ class Alpha(QMainWindow):
             for thread, video_subwindow in zip(all_streaming_threads, all_video_subwins):
                 if thread.video_playing:
                     video_subwindow.end_capture()
-            # close database connection
-            self.db_class.close_connection()
             # close window
             event.accept()
             # close python interpreter

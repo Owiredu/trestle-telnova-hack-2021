@@ -8,6 +8,7 @@ from PyQt5.QtCore import pyqtSignal, QThread
 from PyQt5.QtGui import QPixmap, QImage
 from mylib.centroidtracker import CentroidTracker
 from mylib.trackableobject import TrackableObject
+import imutils
 from imutils.video import FPS
 from mylib.mailer import Mailer
 from mylib import config
@@ -69,8 +70,8 @@ class VideoCaptureThread(QThread):
         # start the frames per second throughput estimator
         self.fps_estimator = FPS().start()
         # define prescribed maximum width and height of frames
-        self.desired_width = 500
-        self.desired_height = 400
+        self.desired_width = 400
+        self.desired_height = 300
         # initialize the previously logged data
         self.prev_logger_data = {
             'timestamp': '',
@@ -304,11 +305,14 @@ class VideoCaptureThread(QThread):
                 if ret:
                     #########
                     # resize the frame is it is larger that 400 in width
-                    if frame.shape[1] > 400:
-                        frame = cv2.resize(frame, (self.desired_width, self.desired_height))
-                    else:
-                        self.desired_width = frame.shape[1]
-                        self.desired_height = frame.shape[0]
+                    # if frame.shape[1] > 400:
+                    #     frame = cv2.resize(frame, (self.desired_width, self.desired_height))
+                    # else:
+                    #     self.desired_width = frame.shape[1]
+                    #     self.desired_height = frame.shape[0]
+                    frame = imutils.resize(frame, width=400)
+                    self.desired_width = frame.shape[1]
+                    self.desired_height = frame.shape[0]
 
                     # initialize the current status along with our list of bounding
                     # box rectangles returned by either (1) our object detector or
@@ -342,6 +346,7 @@ class VideoCaptureThread(QThread):
                     if self.counting_enabled:
                         #########
                         # perform object detection and tracking
+                        # Reference for detection, tracking and counting algorithm: https://github.com/saimj7/People-Counting-in-Real-Time
 
                         # check to see if we should run a more computationally expensive
                         # object detection method to aid our tracker
