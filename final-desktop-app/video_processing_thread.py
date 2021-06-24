@@ -551,6 +551,37 @@ class VideoCaptureThread(QThread):
                         # print("[INFO] approx. FPS: {:.2f}".format(self.fps_estimator.fps()))
 
                     #########
+                    # embed time in frame if enabled
+                    if self.time_visible:
+                        # create black background
+                        frame[frame.shape[0]-18:frame.shape[0],
+                                0:62] = self.black_surface_colored
+                        if self.is_color():
+                            rgb_image[rgb_image.shape[0]-18:rgb_image.shape[0],
+                                      0:62] = self.black_surface_colored
+                            # write time
+                            cv2.putText(rgb_image, time.strftime('%H:%M:%S', time.localtime(time.time())),
+                                        (2, rgb_image.shape[0] -
+                                         5), cv2.FONT_HERSHEY_SIMPLEX,
+                                        0.4, (255, 255, 255), 1, cv2.LINE_AA)
+                            cv2.putText(frame, time.strftime('%H:%M:%S', time.localtime(time.time())),
+                                        (2, frame.shape[0] -
+                                         5), cv2.FONT_HERSHEY_SIMPLEX,
+                                        0.4, (255, 255, 255), 1, cv2.LINE_AA)
+                        else:
+                            gray_image[gray_image.shape[0]-18:gray_image.shape[0],
+                                       0:62] = self.black_surface_grayscale
+                            # write time
+                            cv2.putText(gray_image, time.strftime('%H:%M:%S', time.localtime(time.time())),
+                                        (2, gray_image.shape[0] -
+                                         5), cv2.FONT_HERSHEY_SIMPLEX,
+                                        0.4, (255, 255, 255), 1, cv2.LINE_AA)
+                            cv2.putText(frame, time.strftime('%H:%M:%S', time.localtime(time.time())),
+                                        (2, frame.shape[0] -
+                                         5), cv2.FONT_HERSHEY_SIMPLEX,
+                                        0.4, (255, 255, 255), 1, cv2.LINE_AA)
+
+                    #########
                     # save video to file
                     if self.is_color():
                         # write the colored frame and write the time on it
@@ -575,27 +606,6 @@ class VideoCaptureThread(QThread):
                         # convert the bgr image into a pyqt image
                         qimage = QImage(
                             rgb_image.data, rgb_image.shape[1], rgb_image.shape[0], QImage.Format_RGB888)
-
-                    #########
-                    # embed time in frame if enabled
-                    if self.time_visible:
-                        # create black background
-                        if self.is_color():
-                            rgb_image[rgb_image.shape[0]-18:rgb_image.shape[0],
-                                      0:62] = self.black_surface_colored
-                            # write time
-                            cv2.putText(rgb_image, time.strftime('%H:%M:%S', time.localtime(time.time())),
-                                        (2, rgb_image.shape[0] -
-                                         5), cv2.FONT_HERSHEY_SIMPLEX,
-                                        0.4, (255, 255, 255), 1, cv2.LINE_AA)
-                        else:
-                            gray_image[gray_image.shape[0]-18:gray_image.shape[0],
-                                       0:62] = self.black_surface_grayscale
-                            # write time
-                            cv2.putText(gray_image, time.strftime('%H:%M:%S', time.localtime(time.time())),
-                                        (2, gray_image.shape[0] -
-                                         5), cv2.FONT_HERSHEY_SIMPLEX,
-                                        0.4, (255, 255, 255), 1, cv2.LINE_AA)
                     
                     # create the QPixmap from the QImage
                     qpixmap = QPixmap.fromImage(qimage)
@@ -634,7 +644,7 @@ class VideoCaptureThread(QThread):
                 self.is_file_named = False
             self.vid_capture.release()
         except Exception as e:
-            # print(e)
+            print(e)
             #raise Exception("Camera not accessible")
             self.change_pixmap.emit(
                 QPixmap(self.resource_path('icons' + os.sep + 'conn_error.jpg')))
