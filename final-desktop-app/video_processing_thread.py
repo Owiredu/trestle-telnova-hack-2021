@@ -495,8 +495,8 @@ class VideoCaptureThread(QThread):
 
                         # construct a tuple of information we will be displaying on the
                         info = [
-                            ("Exit", self.total_up),
-                            ("Enter", self.total_down),
+                            ("Out", self.total_up),
+                            ("In", self.total_down),
                             ("Status", status),
                             ("Total people inside", sum(self.x))
                         ]
@@ -634,7 +634,7 @@ class VideoCaptureThread(QThread):
                 self.is_file_named = False
             self.vid_capture.release()
         except Exception as e:
-            print(e)
+            # print(e)
             #raise Exception("Camera not accessible")
             self.change_pixmap.emit(
                 QPixmap(self.resource_path('icons' + os.sep + 'conn_error.jpg')))

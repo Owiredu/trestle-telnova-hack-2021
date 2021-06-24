@@ -1,101 +1,19 @@
 {
     "6": {
-        "25": {
-            "front": {
-                "in": 51,
-                "out": 7
-            },
-            "back": {
-                "in": 40,
-                "out": 17
-            },
-            "east wing": {
-                "in": 10,
+        "24": {
+            "example_01.mp4": {
+                "in": 7,
                 "out": 4
             },
-            "north wing": {
-                "in": 6,
-                "out": 1
-            },
             "total": {
-                "timestamp": "Wed Jun 23 09:25:09 2021",
-                "in": 10,
-                "out": 4,
-                "cur_in": 100
-            }
-        },
-        "23": {
-            "front": {
-                "in": 51,
-                "out": 7
+                "timestamp": "Thu Jun 24 01:01:12 2021",
+                "in": 9,
+                "out": 18,
+                "cur_in": -9
             },
-            "back": {
-                "in": 40,
-                "out": 17
-            },
-            "east wing": {
-                "in": 10,
-                "out": 4
-            },
-            "north wing": {
-                "in": 6,
-                "out": 1
-            },
-            "total": {
-                "timestamp": "Wed Jun 23 09:25:09 2021",
-                "in": 10,
-                "out": 4,
-                "cur_in": 100
-            }
-        },
-        "24": {
-            "front": {
-                "in": 59,
-                "out": 7
-            },
-            "back": {
-                "in": 40,
-                "out": 17
-            },
-            "east wing": {
-                "in": 11,
-                "out": 5
-            },
-            "north wing": {
-                "in": 6,
-                "out": 5
-            },
-            "total": {
-                "timestamp": "Wed Jun 23 09:25:09 2021",
-                "in": 14,
-                "out": 2,
-                "cur_in": 100
-            }
-        }
-    },
-    "7": {
-        "24": {
-            "front": {
-                "in": 59,
-                "out": 7
-            },
-            "back": {
-                "in": 40,
-                "out": 17
-            },
-            "east wing": {
-                "in": 21,
-                "out": 5
-            },
-            "north wing": {
-                "in": 6,
-                "out": 5
-            },
-            "total": {
-                "timestamp": "Wed Jun 23 09:25:09 2021",
-                "in": 14,
-                "out": 2,
-                "cur_in": 100
+            "example_02.mp4": {
+                "in": 2,
+                "out": 14
             }
         }
     }

@@ -14,7 +14,7 @@ class PostUpdateThread(QThread):
     def __init__(self):
         super().__init__()
         self.post_url = "http://127.0.0.1:5000/get_update"
-        self.cur_year = datetime.now().year
+        self.year = datetime.now().year
         self.wait_time = UPDATE_WAIT_TIME # seconds
 
     def is_update_available(self):
@@ -31,7 +31,7 @@ class PostUpdateThread(QThread):
         Posts the update to the server
         """
         # load data from json data file
-        json_file = open(DATABASES_BASE_DIR + os.sep + str(self.cur_year) + '.json', 'r')
+        json_file = open(DATABASES_BASE_DIR + os.sep + str(self.year) + '_today.json', 'r')
         json_data = json.load(json_file)
         json_file.close()
         # post data to server
@@ -47,6 +47,8 @@ class PostUpdateThread(QThread):
                 # check if a new update is available before posting
                 year =  self.is_update_available()
                 if year:
+                    # set the current year to the retrieved one
+                    self.year = year
                     # post update
                     ret = self.post_update()
                     # set the wait time depending on whether the post was successful or not
@@ -55,9 +57,9 @@ class PostUpdateThread(QThread):
                     else:
                         self.wait_time = UPDATE_RETRY_TIME
                     # remove update notification
-                    os.remove(DATABASES_BASE_DIR + os.sep + year + UPDATE_NOTIFIER_EXTENSION)
-            except Exception as e:
-                print(e)
+                    os.remove(DATABASES_BASE_DIR + os.sep + self.year + UPDATE_NOTIFIER_EXTENSION)
+            except:
+                pass
             # wait for a specified number of seconds before running next update post
             time.sleep(self.wait_time)
 

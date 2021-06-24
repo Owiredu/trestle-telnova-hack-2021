@@ -60,11 +60,11 @@ def get_update():
             fr.close()
             # update the json database
             if not cur_month in data:
-                data[cur_month] = {}
+                data[cur_month] = dict()
             data[cur_month][cur_day] = json_data[cur_month][cur_day]
         else:
             # update the json database
-            data[cur_month] = {}
+            data[cur_month] = dict()
             data[cur_month][cur_day] = json_data[cur_month][cur_day]
         # write the updated json data
         fw = open(json_file_path, 'w')
