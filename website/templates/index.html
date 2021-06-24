@@ -17,9 +17,9 @@
     <center>
 
         <div>
-          <h1>ALPHA SURVEILLANCE SYSTEM</h1>
-          <h3>DAILY STATISTICS</h3>
-          <h5>LAST UPDATED: {{ data.total.timestamp }}</h5>
+          <h2>ALPHA SURVEILLANCE SYSTEM</h2>
+          <h4>DAILY STATISTICS</h4>
+          <h6>LAST UPDATED: {{ data.total.timestamp }}</h6>
         </div>
 
         <div class="row" style="padding-top: 10px;">
@@ -27,9 +27,9 @@
                 <div class="card text-white bg-secondary mb-3" style="max-width: 18rem;">
                     <div class="card-header">Total</div>
                     <div class="card-body">
-                        <h3 class="text-succes">In - {{ data.total.in }}</h3>
-                        <h3 class="text-dange">Out - {{ data.total.out }}</h3>
-                        <h2>Currently In - {{ data.total.cur_in }}</h2>
+                        <h3 class="text-succes">In : {{ data.total.in }}</h3>
+                        <h3 class="text-dange">Out : {{ data.total.out }}</h3>
+                        <h2>Currently In : {{ data.total.cur_in }}</h2>
                     </div>
                   </div>
             </div>
@@ -42,8 +42,8 @@
                     <div class="card border-primary mb-3" style="max-width: 18rem;">
                         <div class="card-header text-primary">{{ cam_id }}</div>
                         <div class="card-body">
-                          <h3 class="text-success">In - {{ cam_data.in }}</h3>
-                          <h3 class="text-danger">Out - {{ cam_data.out }}</h3>
+                          <h3 class="text-success">In : {{ cam_data.in }}</h3>
+                          <h3 class="text-danger">Out : {{ cam_data.out }}</h3>
                         </div>
                       </div> 
                 </div>
