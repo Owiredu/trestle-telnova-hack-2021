@@ -13,8 +13,9 @@ def index():
         base_dir = os.path.dirname(__file__)
         folder = "static" + os.sep + "count_data"
         data_dir = os.path.join(base_dir, folder)
-        data = dict()
+        os.makedirs(data_dir, exist_ok=True)
         
+        data = dict()
         with open(os.path.join(data_dir, "2021.json")) as f:
             data = json.load(f)
         cur_date = datetime.now()
@@ -43,6 +44,7 @@ def get_update():
         base_dir = os.path.dirname(__file__)
         folder = "static" + os.sep + "count_data"
         data_dir = os.path.join(base_dir, folder)
+        os.makedirs(data_dir, exist_ok=True)
         year = list(json_data.keys())[0]
         json_file_path = os.path.join(data_dir, f"{year}.json")
         # remove year from json data and keep only the month, day and camera data since year no more needed
