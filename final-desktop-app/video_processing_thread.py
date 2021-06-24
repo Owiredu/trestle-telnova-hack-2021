@@ -11,10 +11,7 @@ from mylib.trackableobject import TrackableObject
 from imutils.video import FPS
 from mylib.mailer import Mailer
 from mylib import config
-import csv
 import dlib, datetime
-from itertools import zip_longest
-from db_conn import DbConnection
 from constants import *
 
 

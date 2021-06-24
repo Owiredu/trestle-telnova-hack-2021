@@ -9,7 +9,6 @@ from PyQt5.QtGui import QPixmap, QImage, QIcon
 from PyQt5.QtCore import Qt, QDate, QDir, QSize
 from PyQt5.QtMultimedia import QCameraInfo
 from alpha_ui import Ui_MainWindow
-from db_conn import DbConnection
 from video_processing_thread import VideoCaptureThread
 from logger_thread import LoggerThread
 from post_update_thread import PostUpdateThread
@@ -63,15 +62,6 @@ class Alpha(QMainWindow):
         self.max_num_of_streams_allowed = 100
         # set the camera view mode as default
         self.ui.stackedWidget.setCurrentWidget(self.ui.cameraViewPage)
-        # initialize database class
-        # create connection and cursor to database
-        try:
-            self.db_class = DbConnection()
-            self.connection = self.db_class.connection
-            self.cursor = self.db_class.cursor
-        except:
-            QMessageBox.critical(
-                self, 'SQL Error', 'Could not connect to database')
         # initialize add new stream class
         self.add_stream_dialog = AddNewStream(self.ui.mdiArea, MdiSubWindow, self.resource_path, self.tile_camera_view)
         # initialize the path to the photo
@@ -1537,14 +1527,6 @@ class MdiSubWindow(QMdiSubWindow, QWidget):
         self.vid_cap_thread.send_logger_data.connect(self.handle_logger_data)
         # add the thread to the list of video streaming threads
         all_streaming_threads.append(self.vid_cap_thread)
-        # create connection and cursor to database
-        try:
-            db_class = DbConnection()
-            self.connection = db_class.connection
-            self.cursor = db_class.cursor
-        except:
-            QMessageBox.critical(
-                self, 'SQL Error', 'Could not connect to database')
         # set the minimum size the for the sub window
         self.setMinimumSize(200, 150)
         # set the preferred size of the sub window
