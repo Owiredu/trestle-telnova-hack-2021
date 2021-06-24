@@ -310,7 +310,8 @@ class VideoCaptureThread(QThread):
                     # else:
                     #     self.desired_width = frame.shape[1]
                     #     self.desired_height = frame.shape[0]
-                    frame = imutils.resize(frame, width=400)
+                    frame = imutils.resize(frame, width=500)
+                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     self.desired_width = frame.shape[1]
                     self.desired_height = frame.shape[0]
 
