@@ -22,7 +22,7 @@ This is an artificial intelligence surveillance system that counts people moving
 
    `flask run`
 
-6. To start the desktop application, navigate the `/final-desktop-app/` directory and run the command: 
+6. To start the desktop application, navigate the `/desktop-app/` directory and run the command: 
 
    `python alpha_main.py`
 
