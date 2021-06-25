@@ -9,8 +9,9 @@ from PyQt5.QtGui import QPixmap, QImage, QIcon
 from PyQt5.QtCore import Qt, QDate, QDir, QSize
 from PyQt5.QtMultimedia import QCameraInfo
 from alpha_ui import Ui_MainWindow
-from db_conn import DbConnection
 from video_processing_thread import VideoCaptureThread
+from logger_thread import LoggerThread
+from post_update_thread import PostUpdateThread
 from video_player_main import VideoPlayer
 from add_new_stream_ui import Ui_addCameraDialog
 from mdi_content_ui import Ui_mdiSubWIndowContent
@@ -23,6 +24,12 @@ QApplication.setStyle(QStyleFactory.create('Fusion'))
 all_streaming_threads = []
 # store instances of all video subwindows
 all_video_subwins = []
+# initialize the logger thread
+logger_thread = LoggerThread()
+logger_thread.start()
+# initialize the update post thread
+post_update_thread = PostUpdateThread()
+post_update_thread.start()
 
 # SAMPLE VIDEO LINKS (These are free links and may be unavailable at any time:
 # 1. http://wmccpinetop.axiscam.net/mjpg/video.mjpg
@@ -55,15 +62,6 @@ class Alpha(QMainWindow):
         self.max_num_of_streams_allowed = 100
         # set the camera view mode as default
         self.ui.stackedWidget.setCurrentWidget(self.ui.cameraViewPage)
-        # initialize database class
-        # create connection and cursor to database
-        try:
-            self.db_class = DbConnection()
-            self.connection = self.db_class.connection
-            self.cursor = self.db_class.cursor
-        except:
-            QMessageBox.critical(
-                self, 'SQL Error', 'Could not connect to database')
         # initialize add new stream class
         self.add_stream_dialog = AddNewStream(self.ui.mdiArea, MdiSubWindow, self.resource_path, self.tile_camera_view)
         # initialize the path to the photo
@@ -1485,8 +1483,6 @@ class Alpha(QMainWindow):
             for thread, video_subwindow in zip(all_streaming_threads, all_video_subwins):
                 if thread.video_playing:
                     video_subwindow.end_capture()
-            # close database connection
-            self.db_class.close_connection()
             # close window
             event.accept()
             # close python interpreter
@@ -1526,16 +1522,9 @@ class MdiSubWindow(QMdiSubWindow, QWidget):
         # self.setWindowTitle(self.sub_win_name)
         # initialize the video capture thread
         self.vid_cap_thread = VideoCaptureThread(camera_id, win_name, self.resource_path)
+        self.vid_cap_thread.send_logger_data.connect(self.handle_logger_data)
         # add the thread to the list of video streaming threads
         all_streaming_threads.append(self.vid_cap_thread)
-        # create connection and cursor to database
-        try:
-            db_class = DbConnection()
-            self.connection = db_class.connection
-            self.cursor = db_class.cursor
-        except:
-            QMessageBox.critical(
-                self, 'SQL Error', 'Could not connect to database')
         # set the minimum size the for the sub window
         self.setMinimumSize(200, 150)
         # set the preferred size of the sub window
@@ -1544,8 +1533,7 @@ class MdiSubWindow(QMdiSubWindow, QWidget):
         self.ui.displayLabel.setPixmap(
             QPixmap(self.resource_path('icons' + os.sep + 'default_camera_view.png')))
         # set the image returned by the signal to the label
-        self.vid_cap_thread.change_pixmap.connect(
-            self.ui.displayLabel.setPixmap)
+        self.vid_cap_thread.change_pixmap.connect(self.ui.displayLabel.setPixmap)
         self.previously_recognized_id = ''
         # add the root layout from the generated code to parent widget
         self.widget_parent.setLayout(self.ui.gridLayout)
@@ -1570,6 +1558,13 @@ class MdiSubWindow(QMdiSubWindow, QWidget):
         # hide and show the options frame when the display label is double clicked
         self.frame_hidden = False   # monitor if frame is hidden or not
         self.ui.displayLabel.mouseDoubleClickEvent = self.hide_options_frame
+
+    def handle_logger_data(self, send_logger_data_signal):
+        """
+        Handles the logger from the video threads
+        """
+        # add the data to the logger thread's queue
+        logger_thread.enqueue(send_logger_data_signal)
 
     def start_capture(self):
         """

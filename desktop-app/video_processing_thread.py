@@ -2,11 +2,17 @@ import os
 import time
 import cv2
 import socket
-import numpy
+import numpy as np
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import pyqtSignal, QThread
 from PyQt5.QtGui import QPixmap, QImage
-from db_conn import DbConnection
+from mylib.centroidtracker import CentroidTracker
+from mylib.trackableobject import TrackableObject
+import imutils
+from imutils.video import FPS
+from mylib.mailer import Mailer
+from mylib import config
+import dlib, datetime
 from constants import *
 
 
@@ -19,6 +25,7 @@ class VideoCaptureThread(QThread):
     """
 
     change_pixmap = pyqtSignal(QPixmap, name='change_pixmap')
+    send_logger_data = pyqtSignal(dict, name='send_logger_data')
 
     # argument types: String or int, String, Function
     def __init__(self, camera_id, camera_id_for_db, resource_path_func):
@@ -36,12 +43,44 @@ class VideoCaptureThread(QThread):
         # monitor the recording stream so that whenever it is stopped and started, the next one has a different filename
         self.is_file_named = False
         # set the zero matrix to be used as the black background for the time in the frame
-        self.black_surface_colored = numpy.zeros((18, 62, 3), numpy.uint8)
-        self.black_surface_grayscale = numpy.zeros((18, 62), numpy.uint8)
+        self.black_surface_colored = np.zeros((18, 62, 3), np.uint8)
+        self.black_surface_grayscale = np.zeros((18, 62), np.uint8)
         # boolean to show/hide time in frames
         self.time_visible = True
         # boolean to turn on/off people counting
         self.counting_enabled = False
+        # object detection and tracking variables
+        self.prototxt = self.resource_path('mobilenet_ssd' + os.sep + 'MobileNetSSD_deploy.prototxt')
+        self.model = self.resource_path('mobilenet_ssd' + os.sep + 'MobileNetSSD_deploy.caffemodel')
+        self.confidence = 0.4
+        self.skip_frames = 30
+        self.net = cv2.dnn.readNetFromCaffe(self.prototxt, self.model)
+        # centroid tracker variables
+        self.centroid_tracker = CentroidTracker(maxDisappeared=40, maxDistance=50)
+        self.trackers = []
+        self.trackable_objects = {}
+        # initialize the total number of frames processed, thus for, along with the total number of objects that have been
+        # moved either up or down
+        self.total_frames = 0
+        self.total_down = 0
+        self.total_up = 0
+        self.x = []
+        self.empty = []
+        self.empty1 = []
+        # start the frames per second throughput estimator
+        self.fps_estimator = FPS().start()
+        # define prescribed maximum width and height of frames
+        self.desired_width = 400
+        self.desired_height = 300
+        # initialize the previously logged data
+        self.prev_logger_data = {
+            'timestamp': '',
+            'year': '',
+            'month': '',
+            'day': '',
+            'cam_id': '',
+            'cam_data': {'in': 0, 'out': 0}
+        }
 
     def prep_video_capture(self, buffer_size=10):  # argument types: int, int
         """
@@ -200,20 +239,30 @@ class VideoCaptureThread(QThread):
         """
         return cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-    def rectangle(self, img, rect):  # argument types: Mat, list
+    def rectangle(self, frame, rect):  # argument types: Mat, list
         """
         This method draws a rectangle around the detected face
         """
         (x, y, w, h) = rect
-        cv2.rectangle(img, (x-10, y-10), (w+10, h+10),(0, 255, 0), 2, cv2.LINE_AA)
+        cv2.rectangle(frame, (x-10, y-10), (w+10, h+10),(0, 255, 0), 2, cv2.LINE_AA)
 
-    def putText(self, img, subject_id, rect):  # argument types: Mat, String, list
+    def putText(self, frame, text, coord):  # argument types: Mat, String, list
         """
         This method writes the id of the recognized person with the rectangle about the face
         """
-        (x, y, w, h) = rect
-        cv2.putText(img, str(subject_id), (x-10, y-15),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 0), 1, cv2.LINE_AA)
+        cv2.putText(frame, str(text), coord, cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 0), 1, cv2.LINE_AA)
+
+    def line(sel, frame, coords):
+        """
+        This method draws a line of the frame
+        """
+        cv2.line(frame, coords[0], coords[1], (0, 0, 255), 3, cv2.LINE_AA)
+
+    def circle(sel, frame, center, radius):
+        """
+        This method draws a line of the frame
+        """
+        cv2.circle(frame, center, radius, (255, 255, 255), 3, cv2.LINE_AA)
 
     def start_counting(self):
         """
@@ -232,12 +281,12 @@ class VideoCaptureThread(QThread):
         This method runs all the processes
         """
         try:
+            # get the start time
+            self.start_time = time.time()
             # set the frame count for url stream sources
             self.frame_from_url_source = None
             # set loading image
             self.change_pixmap.emit(QPixmap(self.resource_path('icons' + os.sep + 'loading_vid.jpg')))
-            # set model trained to false
-            self.is_model_trained = False
             # prepare video capture
             self.prep_video_capture()
             # calculate the delay for video file
@@ -256,8 +305,21 @@ class VideoCaptureThread(QThread):
                 if ret:
                     #########
                     # resize the frame is it is larger that 400 in width
-                    if frame.shape[1] > 400:
-                        frame = cv2.resize(frame, (400, 300))
+                    # if frame.shape[1] > 400:
+                    #     frame = cv2.resize(frame, (self.desired_width, self.desired_height))
+                    # else:
+                    #     self.desired_width = frame.shape[1]
+                    #     self.desired_height = frame.shape[0]
+                    frame = imutils.resize(frame, width=500)
+                    frame = self.convertToRGB(frame)
+                    self.desired_width = frame.shape[1]
+                    self.desired_height = frame.shape[0]
+
+                    # initialize the current status along with our list of bounding
+                    # box rectangles returned by either (1) our object detector or
+                    # (2) the correlation trackers
+                    status = 'Waiting'
+                    rects = []
 
                     #########
                     # get frame count frame if the video stream source is url
@@ -282,16 +344,231 @@ class VideoCaptureThread(QThread):
                         # end snapshot
                         self.abort_snapshot()
 
+                    if self.counting_enabled:
+                        #########
+                        # perform object detection and tracking
+                        # Reference for detection, tracking and counting algorithm: https://github.com/saimj7/People-Counting-in-Real-Time
+
+                        # check to see if we should run a more computationally expensive
+                        # object detection method to aid our tracker
+                        if self.total_frames % self.skip_frames == 0:
+                            # set the status and initialize our new set of object trackers
+                            status = "Detecting"
+                            self.trackers = []
+
+                            # convert the frame to a blob and pass the blob through the
+                            # network and obtain the detections
+                            blob = cv2.dnn.blobFromImage(frame, 0.007843, (self.desired_width, self.desired_height), 127.5)
+                            self.net.setInput(blob)
+                            detections = self.net.forward()
+
+                            # loop over the detections
+                            for i in np.arange(0, detections.shape[2]):
+                                # extract the confidence (i.e., probability) associated
+                                # with the prediction
+                                confidence = detections[0, 0, i, 2]
+
+                                # filter out weak detections by requiring a minimum
+                                # confidence
+                                if confidence > self.confidence:
+                                    # extract the index of the class label from the
+                                    # detections list
+                                    idx = int(detections[0, 0, i, 1])
+
+                                    # if the class label is not a person, ignore it
+                                    if CLASSES[idx] != "person":
+                                        continue
+
+                                    # compute the (x, y)-coordinates of the bounding box
+                                    # for the object
+                                    box = detections[0, 0, i, 3:7] * np.array([self.desired_width, self.desired_height, self.desired_width, self.desired_height])
+                                    (startX, startY, endX, endY) = box.astype("int")
+
+
+                                    # construct a dlib rectangle object from the bounding
+                                    # box coordinates and then start the dlib correlation
+                                    # tracker
+                                    tracker = dlib.correlation_tracker()
+                                    rect = dlib.rectangle(startX, startY, endX, endY)
+                                    tracker.start_track(rgb_image, rect)
+
+                                    # add the tracker to our list of trackers so we can
+                                    # utilize it during skip frames
+                                    self.trackers.append(tracker)
+
+                                QApplication.processEvents()
+
+                        # otherwise, we should utilize our object *trackers* rather than
+                        # object *detectors* to obtain a higher frame processing throughput
+                        else:
+                            # loop over the trackers
+                            for tracker in self.trackers:
+                                # set the status of our system to be 'tracking' rather
+                                # than 'waiting' or 'detecting'
+                                status = "Tracking"
+
+                                # update the tracker and grab the updated position
+                                tracker.update(rgb_image)
+                                pos = tracker.get_position()
+
+                                # unpack the position object
+                                startX = int(pos.left())
+                                startY = int(pos.top())
+                                endX = int(pos.right())
+                                endY = int(pos.bottom())
+
+                                # add the bounding box coordinates to the rectangles list
+                                rects.append((startX, startY, endX, endY))
+
+                                QApplication.processEvents()
+                        
+                        # draw a horizontal line in the center of the frame -- once an
+                        # object crosses this line we will determine whether they were
+                        # moving 'up' or 'down'
+                        self.line(frame, ((0, self.desired_height // 2), (self.desired_width, self.desired_height // 2)))
+                        # self.putText(frame, "-Prediction border - Entrance-", (10, self.desired_height - ((i * 20) + 150)))
+
+                        # use the centroid tracker to associate the (1) old object
+                        # centroids with (2) the newly computed object centroids
+                        objects = self.centroid_tracker.update(rects)
+
+                        # loop over the tracked objects
+                        for (objectID, centroid) in objects.items():
+                            # check to see if a trackable object exists for the current
+                            # object ID
+                            to = self.trackable_objects.get(objectID, None)
+
+                            # if there is no existing trackable object, create one
+                            if to is None:
+                                to = TrackableObject(objectID, centroid)
+
+                            # otherwise, there is a trackable object so we can utilize it
+                            # to determine direction
+                            else:
+                                # the difference between the y-coordinate of the *current*
+                                # centroid and the mean of *previous* centroids will tell
+                                # us in which direction the object is moving (negative for
+                                # 'up' and positive for 'down')
+                                y = [c[1] for c in to.centroids]
+                                direction = centroid[1] - np.mean(y)
+                                to.centroids.append(centroid)
+
+                                # check to see if the object has been counted or not
+                                if not to.counted:
+                                    # if the direction is negative (indicating the object
+                                    # is moving up) AND the centroid is above the center
+                                    # line, count the object
+                                    if direction < 0 and centroid[1] < self.desired_height // 2:
+                                        self.total_up += 1
+                                        self.empty.append(self.total_up)
+                                        to.counted = True
+
+                                    # if the direction is positive (indicating the object
+                                    # is moving down) AND the centroid is below the
+                                    # center line, count the object
+                                    elif direction > 0 and centroid[1] > self.desired_height // 2:
+                                        self.total_down += 1
+                                        self.empty1.append(self.total_down)
+                                        #print(empty1[-1])
+                                        # if the people limit exceeds over threshold, send an email alert
+                                        if sum(self.x) >= config.Threshold:
+                                            cv2.putText(frame, "-ALERT: People limit exceeded-", (10, frame.shape[0] - 80),
+                                                cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 255), 2)
+                                            if config.ALERT:
+                                                print("[INFO] Sending email alert..")
+                                                Mailer().send(config.MAIL)
+                                                print("[INFO] Alert sent")
+
+                                        to.counted = True
+                                        
+                                    self.x = []
+                                    # compute the sum of total people inside
+                                    self.x.append(len(self.empty1)-len(self.empty))
+
+                            # store the trackable object in our dictionary
+                            self.trackable_objects[objectID] = to
+
+                            # draw both the ID of the object and the centroid of the
+                            # object on the output frame
+                            text = "ID {}".format(objectID)
+                            self.putText(frame, text, (centroid[0] - 10, centroid[1] - 10))
+                            self.circle(frame, (centroid[0], centroid[1]), 4)
+
+                            QApplication.processEvents()
+
+                        # construct a tuple of information we will be displaying on the
+                        info = [
+                            ("Out", self.total_up),
+                            ("In", self.total_down),
+                            ("Status", status),
+                            ("Total people inside", sum(self.x))
+                        ]
+
+                        # Display the output
+                        for (i, (k, v)) in enumerate(info):
+                            text = "{}: {}".format(k, v)
+                            self.putText(frame, text, (10, self.desired_height - ((i * 20) + 30)))
+
+                            QApplication.processEvents()
+
+                        # send current log data to the main thread to be saved
+                        now = datetime.datetime.now()
+                        export_data = {
+                            'in': self.total_down, 
+                            'out': self.total_up
+                        }
+                        logger_data = dict()
+                        logger_data['timestamp'] = now.ctime()
+                        logger_data['year'] = str(now.year)
+                        logger_data['month'] = str(now.month)
+                        logger_data['day'] = str(now.day)
+                        logger_data['cam_id'] = self.camera_id_for_db
+                        logger_data['cam_data'] = export_data
+                        # check if the current log data is the same as the previous
+                        same = all(
+                            [
+                                self.prev_logger_data['cam_data']['in'] == logger_data['cam_data']['in'],
+                                self.prev_logger_data['cam_data']['out'] == logger_data['cam_data']['out']
+                            ]
+                        )
+                        # send log data if it is different from the previous one
+                        if not same:
+                            self.send_logger_data.emit(logger_data)
+                            self.prev_logger_data = logger_data
+
+                        # increment the total number of frames processed thus far and
+                        # then update the FPS counter
+                        self.total_frames += 1
+                        self.fps_estimator.update()
+
+                        if config.Timer:
+                            # Automatic timer to stop the live stream. Set to 8 hours (28800s).
+                            self.end_time = time.time()
+                            num_seconds=(self.end_time - self.start_time)
+                            if num_seconds > 10:
+                                break
+
+                        # # stop the timer and display FPS information
+                        # self.fps_estimator.stop()
+                        # print("[INFO] elapsed time: {:.2f}".format(self.fps_estimator.elapsed()))
+                        # print("[INFO] approx. FPS: {:.2f}".format(self.fps_estimator.fps()))
+
                     #########
                     # embed time in frame if enabled
                     if self.time_visible:
                         # create black background
+                        frame[frame.shape[0]-18:frame.shape[0],
+                                0:62] = self.black_surface_colored
                         if self.is_color():
                             rgb_image[rgb_image.shape[0]-18:rgb_image.shape[0],
                                       0:62] = self.black_surface_colored
                             # write time
                             cv2.putText(rgb_image, time.strftime('%H:%M:%S', time.localtime(time.time())),
                                         (2, rgb_image.shape[0] -
+                                         5), cv2.FONT_HERSHEY_SIMPLEX,
+                                        0.4, (255, 255, 255), 1, cv2.LINE_AA)
+                            cv2.putText(frame, time.strftime('%H:%M:%S', time.localtime(time.time())),
+                                        (2, frame.shape[0] -
                                          5), cv2.FONT_HERSHEY_SIMPLEX,
                                         0.4, (255, 255, 255), 1, cv2.LINE_AA)
                         else:
@@ -302,12 +579,16 @@ class VideoCaptureThread(QThread):
                                         (2, gray_image.shape[0] -
                                          5), cv2.FONT_HERSHEY_SIMPLEX,
                                         0.4, (255, 255, 255), 1, cv2.LINE_AA)
+                            cv2.putText(frame, time.strftime('%H:%M:%S', time.localtime(time.time())),
+                                        (2, frame.shape[0] -
+                                         5), cv2.FONT_HERSHEY_SIMPLEX,
+                                        0.4, (255, 255, 255), 1, cv2.LINE_AA)
 
                     #########
                     # save video to file
                     if self.is_color():
                         # write the colored frame and write the time on it
-                        frame_to_save = frame.copy()
+                        frame_to_save = rgb_image.copy()
                         self.save_video_stream_to_file(frame_to_save)
                     else:
                         # write the grayscaled frame and write the time on it
@@ -316,6 +597,10 @@ class VideoCaptureThread(QThread):
 
                     #########
                     # send the frame to window for display
+                    # get grayscale and rgb images from frame
+                    gray_image = self.convertToGRAY(frame)
+                    rgb_image = self.convertToRGB(frame)
+
                     if not self.color:
                         # convert the grayscale image into a pyqt image
                         qimage = QImage(
@@ -342,6 +627,8 @@ class VideoCaptureThread(QThread):
                     self.abort_snapshot()
                     self.stop_capture()
 
+                QApplication.processEvents()
+
             # if the given stream source was url, check if any frame was retrieved. If not, display a unique error message
             if not str(self.camera_id).isdigit() and str(self.camera_id).startswith('http') or str(self.camera_id).startswith('rtsp'):
                 if not self.internet_conn_available():
@@ -359,7 +646,8 @@ class VideoCaptureThread(QThread):
                 self.video_writer.release()
                 self.is_file_named = False
             self.vid_capture.release()
-        except:
+        except Exception as e:
+            print(e)
             #raise Exception("Camera not accessible")
             self.change_pixmap.emit(
                 QPixmap(self.resource_path('icons' + os.sep + 'conn_error.jpg')))
