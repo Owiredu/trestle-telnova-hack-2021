@@ -2,15 +2,7 @@
 
 This is an artificial intelligence surveillance system that counts people moving in and out of a building, using cameras positioned at the various entrances and exits of the building.
 
-## SYSTEM ARCHITECTURE
 
-- ##### Desktop Application
-
-  ![](https://github.com/Owiredu/trestle-telnova-hack-2021/blob/main/images/alpha_home.jpg)
-
-- ##### Web client (website)
-
-  ![](https://github.com/Owiredu/trestle-telnova-hack-2021/blob/main/images/webpage.jpg)
 
 ## HOW TO RUN
 
@@ -35,3 +27,35 @@ This is an artificial intelligence surveillance system that counts people moving
    `python alpha_main.py`
 
    
+
+## SYSTEM ARCHITECTURE
+
+- ##### Desktop Application
+
+  ![](https://github.com/Owiredu/trestle-telnova-hack-2021/blob/main/images/alpha_home.jpg)
+
+  ###### FEATURES
+
+  - Counts various individuals moving in and out of the building.
+  - Saves surveillance videos for future reference.
+  - Users can capture and save frames as pictures during surveillance.
+  - Multiple cameras in the same view simultaneously.
+  - Inbuilt video gallery, image gallery and a video player.
+  - Processing of recorded videos from video files.
+  - Sends frequent updates to the web server.
+  - Exports saved videos and images.
+
+- ##### Web client (website)
+
+  ![](https://github.com/Owiredu/trestle-telnova-hack-2021/blob/main/images/webpage.jpg)
+
+  ###### FEATURES
+
+  - Displays statistics using data received from the desktop application.
+
+  
+
+## REFERENCES
+
+1. *https://github.com/saimj7/People-Counting-in-Real-Time*
+
