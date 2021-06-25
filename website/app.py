@@ -31,8 +31,8 @@ def index():
         return render_template("index.html", data=cur_day_data)
     except Exception as e:
         print(e)
-        return Response(json.dumps({'status':'FAIL', 'message': 'Fatal error'}), status=400, mimetype='application/json')
-
+        # return Response(json.dumps({'status':'FAIL', 'message': 'Fatal error'}), status=400, mimetype='application/json')
+        return render_template("index.html", data=None)
 
 
 @app.route("/get_update", methods=['POST'])

@@ -19,9 +19,12 @@
         <div>
           <h2>ALPHA SURVEILLANCE SYSTEM</h2>
           <h4>DAILY STATISTICS</h4>
+          {% if data != None %}
           <h6>LAST UPDATED: {{ data.total.timestamp }}</h6>
+          {% endif %}
         </div>
 
+        {% if data != None %}
         <div class="row" style="padding-top: 10px;">
             <div class="col">
                 <div class="card text-white bg-secondary mb-3" style="max-width: 18rem;">
@@ -51,6 +54,17 @@
             {% endfor %}
         
         </div>
+        {% else %}
+        <div class="row" style="padding-top: 10px;">
+            <div class="col">
+                <div class="card text-white bg-secondary mb-3" style="max-width: 18rem;">
+                    <div class="card-body">
+                        <h3 class="text-succes">No Data Available</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
 
         
         
