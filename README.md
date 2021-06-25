@@ -6,9 +6,11 @@ This is an artificial intelligence surveillance system that counts people moving
 
 - ##### Desktop Application
 
-- ##### Web server
+  ![](https://github.com/Owiredu/trestle-telnova-hack-2021/blob/main/images/alpha_home.jpg)
 
 - ##### Web client (website)
+
+  ![](https://github.com/Owiredu/trestle-telnova-hack-2021/blob/main/images/webpage.jpg)
 
 ## HOW TO RUN
 
