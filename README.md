@@ -14,9 +14,9 @@ This is an artificial intelligence surveillance system that counts people moving
 
 ## HOW TO RUN
 
-1. Download and install Visual C++ build tools. [](https://support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0)
+1. Download and install [Visual C++ build tools](https://support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0)
 
-2. Download and install CMake [](https://cmake.org/download/) and add it to the environment variables.
+2. Download and install [CMake](https://cmake.org/download/) and add it to the environment variables.
 
 3. Navigate to the project's base directory.
 
