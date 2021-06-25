@@ -1,0 +1,20 @@
+{
+    "6": {
+        "25": {
+            "example_02.mp4": {
+                "in": 2,
+                "out": 13
+            },
+            "total": {
+                "timestamp": "Fri Jun 25 09:33:43 2021",
+                "in": 29,
+                "out": 25,
+                "cur_in": 4
+            },
+            "example_01.mp4": {
+                "in": 27,
+                "out": 12
+            }
+        }
+    }
+}
