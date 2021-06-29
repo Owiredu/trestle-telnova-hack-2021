@@ -648,7 +648,7 @@ class Alpha(QMainWindow):
             file_name, _ = QFileDialog.getSaveFileName(self, 'Save Selected Image', QDir.homePath(), 'Image File (*.' + file_ext + ')', options=options)
             # save a copy of the file
             if file_name:
-                file_name = file_name + '.' + file_ext
+                file_name = file_name + ('' if file_name.endswith('.' + file_ext) else '.' + file_ext)
                 shutil.copyfile(image_file, file_name)
                 QMessageBox.information(self, 'Copy Completed', 'Successfully copied image to ' + file_name)
         except IndexError:
@@ -849,7 +849,7 @@ class Alpha(QMainWindow):
             file_name, _ = QFileDialog.getSaveFileName(self, 'Save Selected Video', '', 'Video File (*.' + file_ext + ')', options=options)
             # save a copy of the file
             if file_name:
-                file_name = file_name + '.' + file_ext
+                file_name = file_name + ('' if file_name.endswith('.' + file_ext) else '.' + file_ext)
                 shutil.copyfile(video_file_path, file_name)
                 QMessageBox.information(self, 'Copy Completed', 'Successfully copied video to ' + file_name)
         except:

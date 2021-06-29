@@ -194,10 +194,7 @@ class VideoCaptureThread(QThread):
                 self.is_file_named = False
             # write the current time on the frame with a black background at the bottom left corner
             if self.time_visible:
-                if self.is_color():
-                    frame[frame.shape[0]-18:frame.shape[0], 0:62] = self.black_surface_colored
-                else:
-                    frame[frame.shape[0]-18:frame.shape[0], 0:62] = self.black_surface_grayscale
+                frame[frame.shape[0]-18:frame.shape[0], 0:62] = self.black_surface_colored
                 cv2.putText(frame, time.strftime('%H:%M:%S', time.localtime(time.time())),
                             (2, frame.shape[0]-5), cv2.FONT_HERSHEY_SIMPLEX,
                             0.4, (255, 255, 255), 1, cv2.LINE_AA)
@@ -309,6 +306,7 @@ class VideoCaptureThread(QThread):
                     # else:
                     #     self.desired_width = frame.shape[1]
                     #     self.desired_height = frame.shape[0]
+                    original_frame = frame.copy()
                     frame = imutils.resize(frame, width=500)
                     frame = self.convertToRGB(frame)
                     self.desired_width = frame.shape[1]
@@ -326,22 +324,22 @@ class VideoCaptureThread(QThread):
                         self.frame_from_url_source = ret
 
                     #########
-                    # get grayscale and rgb images from frame
-                    gray_image = self.convertToGRAY(frame)
-                    rgb_image = self.convertToRGB(frame)
-
-                    #########
                     # save snapshot
                     if self.snapshot:
                         # if the snapshot method is called, then save the current frame
                         if self.is_color():
                             # write the rbg image
-                            cv2.imwrite(self.image_path, frame)
+                            cv2.imwrite(self.image_path, original_frame)
                         else:
                             # write the grayscale image
-                            cv2.imwrite(self.image_path, gray_image)
+                            cv2.imwrite(self.image_path, self.convertToGRAY(original_frame))
                         # end snapshot
                         self.abort_snapshot()
+
+                    #########
+                    # get grayscale and rgb images from frame
+                    gray_image = self.convertToGRAY(frame)
+                    rgb_image = self.convertToRGB(frame)
 
                     if self.counting_enabled:
                         #########
@@ -579,25 +577,18 @@ class VideoCaptureThread(QThread):
 
                     #########
                     # save video to file
-                    if self.is_color():
-                        # write the colored frame and write the time on it
-                        frame_to_save = rgb_image.copy()
-                        self.save_video_stream_to_file(frame_to_save)
-                    else:
-                        # write the grayscaled frame and write the time on it
-                        frame_to_save = gray_image.copy()
-                        self.save_video_stream_to_file(frame_to_save)
+                    # write the colored frame and write the time on it
+                    self.save_video_stream_to_file(original_frame)
 
                     #########
                     # send the frame to window for display
                     # get grayscale and rgb images from frame
                     gray_image = self.convertToGRAY(frame)
-                    rgb_image = self.convertToRGB(frame)
+                    rgb_image = frame # self.convertToRGB(frame)
 
                     if not self.color:
                         # convert the grayscale image into a pyqt image
-                        qimage = QImage(
-                            gray_image.data, gray_image.shape[1], gray_image.shape[0], QImage.Format_Grayscale8)
+                        qimage = QImage(gray_image.data, gray_image.shape[1], gray_image.shape[0], QImage.Format_Grayscale8)
                     else:
                         # convert the bgr image into a pyqt image
                         qimage = QImage(rgb_image.data, rgb_image.shape[1], rgb_image.shape[0], QImage.Format_RGB888)
