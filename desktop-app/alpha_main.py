@@ -31,13 +31,6 @@ logger_thread.start()
 post_update_thread = PostUpdateThread()
 post_update_thread.start()
 
-# SAMPLE VIDEO LINKS (These are free links and may be unavailable at any time:
-# 1. http://wmccpinetop.axiscam.net/mjpg/video.mjpg
-# 2. http://webcam.st-malo.com/axis-cgi/mjpg/video.cgi?resolution=352x288
-# 3. rtsp://184.72.239.149/vod/mp4:BigBuckBunny_115k.mov
-# Visit for more: https://www.ttrix.com/apple/iphone/ipvision/ipvisionpubcameras.html
-#             OR: https://www.insecam.org
-
 
 ########################################################################################################################################################################################
 
