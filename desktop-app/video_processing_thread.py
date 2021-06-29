@@ -327,12 +327,8 @@ class VideoCaptureThread(QThread):
                     # save snapshot
                     if self.snapshot:
                         # if the snapshot method is called, then save the current frame
-                        if self.is_color():
-                            # write the rbg image
-                            cv2.imwrite(self.image_path, original_frame)
-                        else:
-                            # write the grayscale image
-                            cv2.imwrite(self.image_path, self.convertToGRAY(original_frame))
+                        # write the rbg image
+                        cv2.imwrite(self.image_path, original_frame)
                         # end snapshot
                         self.abort_snapshot()
 
@@ -584,7 +580,7 @@ class VideoCaptureThread(QThread):
                     # send the frame to window for display
                     # get grayscale and rgb images from frame
                     gray_image = self.convertToGRAY(frame)
-                    rgb_image = frame # self.convertToRGB(frame)
+                    rgb_image = frame.copy()
 
                     if not self.color:
                         # convert the grayscale image into a pyqt image
