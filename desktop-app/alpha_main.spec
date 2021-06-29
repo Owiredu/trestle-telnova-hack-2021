@@ -26,6 +26,10 @@ a = Analysis(['alpha_main.py',
              win_private_assemblies=False,
              cipher=block_cipher)
 
+a.datas += Tree('./icons', prefix='icons')
+a.datas += Tree('./mylib', prefix='mylib')
+a.datas += Tree('./mobilenet_ssd', prefix='mobilenet_ssd')
+
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 
