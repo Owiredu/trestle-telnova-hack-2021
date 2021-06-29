@@ -1,6 +1,5 @@
 import os
 import json
-from datetime import datetime
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread
 from queue import Queue

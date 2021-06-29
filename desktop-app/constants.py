@@ -30,6 +30,10 @@ CLASSES = [
 # 	'cam_data': {'enter': 0, 'exit': 0, 'current_in': 0}
 # }
 
+# url for posting the data
+# replace IP and port with (IP and port) or URL of server
+DATA_POST_URL = "http://127.0.0.1:5000/get_update"
+
 # update wait time for waiting after a successful update and before the next update post
 UPDATE_WAIT_TIME = 20 # seconds
 

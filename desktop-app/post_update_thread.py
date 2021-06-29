@@ -13,7 +13,6 @@ class PostUpdateThread(QThread):
 
     def __init__(self):
         super().__init__()
-        self.post_url = "http://127.0.0.1:5000/get_update"
         self.year = datetime.now().year
         self.wait_time = UPDATE_WAIT_TIME # seconds
 
@@ -35,7 +34,7 @@ class PostUpdateThread(QThread):
         json_data = json.load(json_file)
         json_file.close()
         # post data to server
-        response = requests.post(self.post_url, json=json_data)
+        response = requests.post(DATA_POST_URL, json=json_data)
         # return response
         if response.status_code == 200:
             return True

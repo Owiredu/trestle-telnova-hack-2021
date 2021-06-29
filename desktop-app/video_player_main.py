@@ -1,7 +1,7 @@
 import sys, time, os, shutil
 from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtGui import QPalette, QColor, QIcon, QPixmap
-from PyQt5.QtWidgets import QMainWindow, QApplication, QFileDialog, QMessageBox
+from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtWidgets import QMainWindow, QFileDialog, QMessageBox
 import vlc
 from video_player_ui import Ui_videoPlayerMainWindow
 

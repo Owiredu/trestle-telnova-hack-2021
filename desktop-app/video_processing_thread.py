@@ -195,8 +195,7 @@ class VideoCaptureThread(QThread):
             # write the current time on the frame with a black background at the bottom left corner
             if self.time_visible:
                 if self.is_color():
-                    frame[frame.shape[0]-18:frame.shape[0],
-                          0:62] = self.black_surface_colored
+                    frame[frame.shape[0]-18:frame.shape[0], 0:62] = self.black_surface_colored
                 else:
                     frame[frame.shape[0]-18:frame.shape[0], 0:62] = self.black_surface_grayscale
                 cv2.putText(frame, time.strftime('%H:%M:%S', time.localtime(time.time())),
@@ -557,31 +556,25 @@ class VideoCaptureThread(QThread):
                     # embed time in frame if enabled
                     if self.time_visible:
                         # create black background
-                        frame[frame.shape[0]-18:frame.shape[0],
-                                0:62] = self.black_surface_colored
+                        frame[frame.shape[0]-18:frame.shape[0], 0:62] = self.black_surface_colored
                         if self.is_color():
-                            rgb_image[rgb_image.shape[0]-18:rgb_image.shape[0],
-                                      0:62] = self.black_surface_colored
+                            rgb_image[rgb_image.shape[0]-18:rgb_image.shape[0], 0:62] = self.black_surface_colored
                             # write time
                             cv2.putText(rgb_image, time.strftime('%H:%M:%S', time.localtime(time.time())),
-                                        (2, rgb_image.shape[0] -
-                                         5), cv2.FONT_HERSHEY_SIMPLEX,
+                                        (2, rgb_image.shape[0] - 5), cv2.FONT_HERSHEY_SIMPLEX,
                                         0.4, (255, 255, 255), 1, cv2.LINE_AA)
                             cv2.putText(frame, time.strftime('%H:%M:%S', time.localtime(time.time())),
-                                        (2, frame.shape[0] -
-                                         5), cv2.FONT_HERSHEY_SIMPLEX,
+                                        (2, frame.shape[0] - 5), cv2.FONT_HERSHEY_SIMPLEX,
                                         0.4, (255, 255, 255), 1, cv2.LINE_AA)
                         else:
                             gray_image[gray_image.shape[0]-18:gray_image.shape[0],
                                        0:62] = self.black_surface_grayscale
                             # write time
                             cv2.putText(gray_image, time.strftime('%H:%M:%S', time.localtime(time.time())),
-                                        (2, gray_image.shape[0] -
-                                         5), cv2.FONT_HERSHEY_SIMPLEX,
+                                        (2, gray_image.shape[0] - 5), cv2.FONT_HERSHEY_SIMPLEX,
                                         0.4, (255, 255, 255), 1, cv2.LINE_AA)
                             cv2.putText(frame, time.strftime('%H:%M:%S', time.localtime(time.time())),
-                                        (2, frame.shape[0] -
-                                         5), cv2.FONT_HERSHEY_SIMPLEX,
+                                        (2, frame.shape[0] - 5), cv2.FONT_HERSHEY_SIMPLEX,
                                         0.4, (255, 255, 255), 1, cv2.LINE_AA)
 
                     #########
@@ -607,8 +600,7 @@ class VideoCaptureThread(QThread):
                             gray_image.data, gray_image.shape[1], gray_image.shape[0], QImage.Format_Grayscale8)
                     else:
                         # convert the bgr image into a pyqt image
-                        qimage = QImage(
-                            rgb_image.data, rgb_image.shape[1], rgb_image.shape[0], QImage.Format_RGB888)
+                        qimage = QImage(rgb_image.data, rgb_image.shape[1], rgb_image.shape[0], QImage.Format_RGB888)
                     
                     # create the QPixmap from the QImage
                     qpixmap = QPixmap.fromImage(qimage)
@@ -636,8 +628,7 @@ class VideoCaptureThread(QThread):
                 elif self.frame_from_url_source is None:
                     self.change_pixmap.emit(QPixmap(self.resource_path('icons' + os.sep + 'no_vid_error.jpg')))
                 else:
-                    self.change_pixmap.emit(QPixmap(self.resource_path(
-                        'icons' + os.sep + 'default_camera_view.png')))
+                    self.change_pixmap.emit(QPixmap(self.resource_path('icons' + os.sep + 'default_camera_view.png')))
             else:
                 # set restart image after video from camera or local file is done playing or stopped by user
                 self.change_pixmap.emit(QPixmap(self.resource_path('icons' + os.sep + 'default_camera_view.png')))
@@ -649,5 +640,4 @@ class VideoCaptureThread(QThread):
         except Exception as e:
             print(e)
             #raise Exception("Camera not accessible")
-            self.change_pixmap.emit(
-                QPixmap(self.resource_path('icons' + os.sep + 'conn_error.jpg')))
+            self.change_pixmap.emit(QPixmap(self.resource_path('icons' + os.sep + 'conn_error.jpg')))
