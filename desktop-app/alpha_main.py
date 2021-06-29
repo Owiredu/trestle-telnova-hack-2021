@@ -51,7 +51,7 @@ class Alpha(QMainWindow):
         self.setWindowIcon(QIcon(self.resource_path('icons' + os.sep + 'alpha_icon.png')))
         # create the application directories if they do not exist
         self.prepare_dirs_for_app()
-        # load the settings dictionary
+        # set the maximum number of cameras allowed
         self.max_num_of_streams_allowed = 100
         # set the camera view mode as default
         self.ui.stackedWidget.setCurrentWidget(self.ui.cameraViewPage)
@@ -1693,6 +1693,6 @@ if __name__ == '__main__':
     # grab the main window
     mainWindow = Alpha()
     # show the main window
-    mainWindow.show()
+    mainWindow.showMaximized()
     # exit the qt application thread when main window is closed
     sys.exit(app.exec_())
