@@ -16,9 +16,9 @@ def index():
         os.makedirs(data_dir, exist_ok=True)
         
         data = dict()
-        with open(os.path.join(data_dir, "2021.json")) as f:
-            data = json.load(f)
         cur_date = datetime.now()
+        with open(os.path.join(data_dir, f"{cur_date.year}.json")) as f:
+            data = json.load(f)
         cur_day_data = data.get(str(cur_date.month), dict()).get(str(str(cur_date.day)), {
             "total":{
                 "timestamp":cur_date.ctime(),
