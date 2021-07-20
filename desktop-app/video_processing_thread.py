@@ -301,11 +301,6 @@ class VideoCaptureThread(QThread):
                 if ret:
                     #########
                     # resize the frame is it is larger that 400 in width
-                    # if frame.shape[1] > 400:
-                    #     frame = cv2.resize(frame, (self.desired_width, self.desired_height))
-                    # else:
-                    #     self.desired_width = frame.shape[1]
-                    #     self.desired_height = frame.shape[0]
                     original_frame = frame.copy()
                     frame = imutils.resize(frame, width=500)
                     frame = self.convertToRGB(frame)
