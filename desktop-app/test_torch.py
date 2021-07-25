@@ -10,4 +10,13 @@ img = 'https://ultralytics.com/images/zidane.jpg'  # or file, PIL, OpenCV, numpy
 results = model(img)
 
 # Results
-results.show()  # or .show(), .save(), .crop(), .pandas(), etc.
+result_df = results.pandas().xyxy[0]
+persons = result_df[result_df["name"] == "person"]
+for i in range(persons.shape[0]):
+    person_row = persons.iloc[i]
+    xmin = person_row["xmin"]
+    ymin = person_row["ymin"]
+    xmax = person_row["xmax"]
+    ymax = person_row["ymax"]
+    confidence = person_row["confidence"]
+    print(xmax-xmin, ymax-ymin)  # or .show(), .save(), .crop(), .pandas(), etc.
