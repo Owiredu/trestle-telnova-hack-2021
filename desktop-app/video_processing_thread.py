@@ -370,7 +370,7 @@ class VideoCaptureThread(QThread):
 
                                     # compute the (x, y)-coordinates of the bounding box
                                     # for the object
-                                    startX, startY, endX, endY = xmin, ymin, xmax, ymax
+                                    startX, startY, endX, endY = int(xmin), int(ymin), int(xmax), int(ymax)
 
                                     # construct a dlib rectangle object from the bounding
                                     # box coordinates and then start the dlib correlation
