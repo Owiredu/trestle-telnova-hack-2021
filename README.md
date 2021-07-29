@@ -58,4 +58,5 @@ This is an artificial intelligence surveillance system that counts people moving
 ## REFERENCES
 
 1. *https://github.com/saimj7/People-Counting-in-Real-Time*
+2. *https://github.com/ultralytics/yolov5*
 
