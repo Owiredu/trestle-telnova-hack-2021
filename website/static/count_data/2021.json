@@ -6,10 +6,10 @@
                 "up": 19
             },
             "total": {
-                "timestamp": "Thu Jul 29 16:26:04 2021",
-                "down": 656,
-                "up": 485,
-                "diff": 171
+                "timestamp": "Thu Jul 29 20:59:34 2021",
+                "down": 607,
+                "up": 467,
+                "diff": 140
             },
             "example_03.mp4": {
                 "down": 42,
@@ -24,8 +24,8 @@
                 "up": 50
             },
             "11.avi": {
-                "down": 145,
-                "up": 71
+                "down": 96,
+                "up": 53
             },
             "26.avi": {
                 "down": 46,
