@@ -2,26 +2,26 @@
     "1": {
         "1": {
             "front": {
-                "in": 20,
-                "out": 5
+                "down": 20,
+                "up": 5
             },
             "back": {
-                "in": 60,
-                "out": 51
+                "down": 60,
+                "up": 51
             },
             "east wing": {
-                "in": 10,
-                "out": 4
+                "down": 10,
+                "up": 4
             },
             "north wing": {
-                "in": 6,
-                "out": 1
+                "down": 6,
+                "up": 1
             },
             "total":{
                 "timestamp": "Wed Jun 23 09:25:09 2021",
-                "in":10,
-                "out": 4,
-                "cur_in": 40
+                "down":10,
+                "up": 4,
+                "diff": 40
 
             }
         }
@@ -29,49 +29,49 @@
     "6": {
         "1": {
             "front": {
-                "in": 31,
-                "out": 7
+                "down": 31,
+                "up": 7
             },
             "back": {
-                "in": 40,
-                "out": 17
+                "down": 40,
+                "up": 17
             },"east wing": {
-                "in": 10,
-                "out": 4
+                "down": 10,
+                "up": 4
             },
             "north wing": {
-                "in": 6,
-                "out": 1
+                "down": 6,
+                "up": 1
             },
             "total":{
                 "timestamp": "Wed Jun 23 09:25:09 2021",
-                "in":10,
-                "out": 4,
-                "cur_in": 40
+                "down":10,
+                "up": 4,
+                "diff": 40
 
             }
         },
         "23": {
             "front": {
-                "in": 71,
-                "out": 9
+                "down": 71,
+                "up": 9
             },
             "back": {
-                "in": 36,
-                "out": 19
+                "down": 36,
+                "up": 19
             },"east wing": {
-                "in": 10,
-                "out": 4
+                "down": 10,
+                "up": 4
             },
             "north wing": {
-                "in": 6,
-                "out": 1
+                "down": 6,
+                "up": 1
             },
             "total":{
                 "timestamp": "Wed Jun 23 09:25:09 2021",
-                "in":10,
-                "out": 4,
-                "cur_in": 40
+                "down":10,
+                "up": 4,
+                "diff": 40
             }
         }
     }

@@ -1,19 +1,19 @@
 {
-    "6": {
-        "25": {
+    "7": {
+        "29": {
             "example_02.mp4": {
-                "in": 2,
-                "out": 13
+                "down": 4,
+                "up": 19
             },
             "total": {
-                "timestamp": "Fri Jun 25 09:33:43 2021",
-                "in": 29,
-                "out": 25,
-                "cur_in": 4
+                "timestamp": "Thu Jul 29 02:00:50 2021",
+                "down": 46,
+                "up": 33,
+                "diff": 13
             },
-            "example_01.mp4": {
-                "in": 27,
-                "out": 12
+            "example_03.mp4": {
+                "down": 42,
+                "up": 14
             }
         }
     }

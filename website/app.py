@@ -22,9 +22,9 @@ def index():
         cur_day_data = data.get(str(cur_date.month), dict()).get(str(str(cur_date.day)), {
             "total":{
                 "timestamp":cur_date.ctime(),
-                "in": "0",
-                "out": "0",
-                "cur_in": "0"
+                "down": "0",
+                "up": "0",
+                "diff": "0"
             }}
         )
         # print(cur_day_data)
