@@ -376,13 +376,22 @@ class VideoCaptureThread(QThread):
                                     # construct a dlib rectangle object from the bounding
                                     # box coordinates and then start the dlib correlation
                                     # tracker
-                                    tracker = dlib.correlation_tracker()
-                                    rect = dlib.rectangle(startX, startY, endX, endY)
-                                    tracker.start_track(rgb_image, rect)
+                                    # tracker = dlib.correlation_tracker()
+                                    # rect = dlib.rectangle(startX, startY, endX, endY)
+                                    # tracker.start_track(rgb_image, rect)
+
+                                    # TODO: FOR CSRT TRACKER
+                                    csrt_tracker = cv2.TrackerCSRT_create()
+                                    csrt_tracker.init(rgb_image, (startX, startY, endX - startX, endY - startY))
+                                    # TODO: END OF CSRT TRACKER
 
                                     # add the tracker to our list of trackers so we can
                                     # utilize it during skip frames
-                                    self.trackers.append(tracker)
+                                    # self.trackers.append(tracker)
+
+                                    # TODO: FOR CSRT TRACKER
+                                    self.trackers.append(csrt_tracker)
+                                    # TODO: END OF CSRT TRACKER
 
                             ############################# END::DETECTION WITH YOLOV5 MODEL #############################
 
@@ -442,18 +451,27 @@ class VideoCaptureThread(QThread):
                                 # than 'waiting' or 'detecting'
                                 status = "Tracking"
 
-                                # update the tracker and grab the updated position
-                                tracker.update(rgb_image)
-                                pos = tracker.get_position()
+                                # # update the tracker and grab the updated position
+                                # tracker.update(rgb_image)
+                                # pos = tracker.get_position()
 
-                                # unpack the position object
-                                startX = int(pos.left())
-                                startY = int(pos.top())
-                                endX = int(pos.right())
-                                endY = int(pos.bottom())
+                                # # unpack the position object
+                                # startX = int(pos.left())
+                                # startY = int(pos.top())
+                                # endX = int(pos.right())
+                                # endY = int(pos.bottom())
+
+                                # grab the new bounding box coordinates of the object
+                                (success, box) = tracker.update(rgb_image)
+                                # check to see if the tracking was a success
+                                if success:
+                                    (x, y, w, h) = [int(v) for v in box]
+                                    startX, startY, endX, endY = int(x), int(y), int(x + w), int(y + h)
+                                    # add the bounding box coordinates to the rectangles list
+                                    rects.append((startX, startY, endX, endY))
 
                                 # add the bounding box coordinates to the rectangles list
-                                rects.append((startX, startY, endX, endY))
+                                # rects.append((startX, startY, endX, endY))
 
                                 QApplication.processEvents()
                         
