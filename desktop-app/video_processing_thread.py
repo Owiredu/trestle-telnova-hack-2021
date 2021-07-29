@@ -52,12 +52,13 @@ class VideoCaptureThread(QThread):
         # object detection and tracking variables
         # self.prototxt = self.resource_path('mobilenet_ssd' + os.sep + 'MobileNetSSD_deploy.prototxt')
         # self.model = self.resource_path('mobilenet_ssd' + os.sep + 'MobileNetSSD_deploy.caffemodel')
-        self.confidence = 0.4
-        self.skip_frames = 30
+        self.confidence = 0.5
+        self.skip_frames = 10
         # self.net = cv2.dnn.readNetFromCaffe(self.prototxt, self.model)
-        self.net = torch.hub.load('yolov5', 'custom', 'yolov5/crowdhuman_yolov5m.pt', source="local")
+        self.net = torch.hub.load('yolov5', 'custom', 'yolov5/best.pt', source="local")
+        # self.net = torch.hub.load('yolov5', 'custom', 'yolov5/retrained_models/trial_train_retrain/best.pt', source="local")
         # centroid tracker variables
-        self.centroid_tracker = CentroidTracker(maxDisappeared=40, maxDistance=50)
+        self.centroid_tracker = CentroidTracker(maxDisappeared=10, maxDistance=50)
         self.trackers = []
         self.trackable_objects = {}
         # initialize the total number of frames processed, thus for, along with the total number of objects that have been
