@@ -6,14 +6,62 @@
                 "up": 19
             },
             "total": {
-                "timestamp": "Thu Jul 29 02:00:50 2021",
-                "down": 46,
-                "up": 33,
-                "diff": 13
+                "timestamp": "Thu Jul 29 16:26:04 2021",
+                "down": 656,
+                "up": 485,
+                "diff": 171
             },
             "example_03.mp4": {
                 "down": 42,
                 "up": 14
+            },
+            "example_01.mp4": {
+                "down": 3,
+                "up": 7
+            },
+            "27.avi": {
+                "down": 73,
+                "up": 50
+            },
+            "11.avi": {
+                "down": 145,
+                "up": 71
+            },
+            "26.avi": {
+                "down": 46,
+                "up": 17
+            },
+            "17.avi": {
+                "down": 41,
+                "up": 31
+            },
+            "14.avi": {
+                "down": 20,
+                "up": 23
+            },
+            "21.avi": {
+                "down": 118,
+                "up": 32
+            },
+            "23.avi": {
+                "down": 59,
+                "up": 75
+            },
+            "29.avi": {
+                "down": 20,
+                "up": 31
+            },
+            "24.avi": {
+                "down": 27,
+                "up": 53
+            },
+            "28.avi": {
+                "down": 26,
+                "up": 40
+            },
+            "12.avi": {
+                "down": 32,
+                "up": 22
             }
         }
     }
