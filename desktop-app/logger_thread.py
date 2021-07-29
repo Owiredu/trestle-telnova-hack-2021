@@ -74,7 +74,7 @@ class LoggerThread(QThread):
             total_up += day_data[cam_id]['up']
         total_stats['down'] = total_down
         total_stats['up'] = total_up
-        total_stats['diff'] = total_down - total_up
+        total_stats['diff'] = abs(total_down - total_up)
 
         # update day data in year database with total statistics
         year_data[export_data['month']][export_data['day']]['total'] = total_stats
