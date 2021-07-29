@@ -34,9 +34,9 @@ class LoggerThread(QThread):
         # total statistics
         total_stats = {
             "timestamp": export_data['timestamp'],
-            "in": 0,
-            "out": 0,
-            "cur_in": 0
+            "down": 0,
+            "up": 0,
+            "diff": 0
         }
         # open json database files for today and the year
         year_json_file = DATABASES_BASE_DIR + os.sep + export_data['year'] + '.json'
@@ -67,14 +67,14 @@ class LoggerThread(QThread):
         if list_of_cam_ids.__contains__('total'):
             list_of_cam_ids.remove('total')
 
-        total_in = 0
-        total_out = 0
+        total_down = 0
+        total_up = 0
         for cam_id in list_of_cam_ids:
-            total_in += day_data[cam_id]['in']
-            total_out += day_data[cam_id]['out']
-        total_stats['in'] = total_in
-        total_stats['out'] = total_out
-        total_stats['cur_in'] = total_in - total_out
+            total_down += day_data[cam_id]['down']
+            total_up += day_data[cam_id]['up']
+        total_stats['down'] = total_down
+        total_stats['up'] = total_up
+        total_stats['diff'] = total_down - total_up
 
         # update day data in year database with total statistics
         year_data[export_data['month']][export_data['day']]['total'] = total_stats

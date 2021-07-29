@@ -81,7 +81,7 @@ class VideoCaptureThread(QThread):
             'month': '',
             'day': '',
             'cam_id': '',
-            'cam_data': {'in': 0, 'out': 0}
+            'cam_data': {'down': 0, 'up': 0}
         }
 
     def prep_video_capture(self, buffer_size=10):  # argument types: int, int
@@ -533,10 +533,10 @@ class VideoCaptureThread(QThread):
 
                         # construct a tuple of information we will be displaying on the
                         info = [
-                            ("Out", self.total_up),
-                            ("In", self.total_down),
+                            ("Up", self.total_up),
+                            ("Down", self.total_down),
                             ("Status", status),
-                            ("Total people inside", sum(self.x))
+                            ("Up-Down Difference", abs(sum(self.x)))
                         ]
 
                         # Display the output
@@ -549,8 +549,8 @@ class VideoCaptureThread(QThread):
                         # send current log data to the main thread to be saved
                         now = datetime.datetime.now()
                         export_data = {
-                            'in': self.total_down, 
-                            'out': self.total_up
+                            'down': self.total_down, 
+                            'up': self.total_up
                         }
                         logger_data = dict()
                         logger_data['timestamp'] = now.ctime()
@@ -562,8 +562,8 @@ class VideoCaptureThread(QThread):
                         # check if the current log data is the same as the previous
                         same = all(
                             [
-                                self.prev_logger_data['cam_data']['in'] == logger_data['cam_data']['in'],
-                                self.prev_logger_data['cam_data']['out'] == logger_data['cam_data']['out']
+                                self.prev_logger_data['cam_data']['down'] == logger_data['cam_data']['down'],
+                                self.prev_logger_data['cam_data']['up'] == logger_data['cam_data']['up']
                             ]
                         )
                         # send log data if it is different from the previous one
