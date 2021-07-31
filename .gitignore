@@ -1,7 +1,6 @@
 **/venv/
 **/__pycache__/
 **/.vscode/
-/models/
 **/retrained_models/
 **/mobilenet_ssd/
 **/videos/
