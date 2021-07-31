@@ -11,75 +11,111 @@
     integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+  <style>
+    body{
+    margin: 10px;
+    }
+
+    .center {
+      margin: auto;
+      width: 80%;
+      border: 3px solid transparent;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .bg_custom_black {
+      margin: auto;
+      width: 100%;
+      background-color: black;
+      color: white;
+    }
+
+    .curved_border {
+      border-radius: 10px;
+    }
+
+    .result_card {
+      background-color:darkgray;
+    }
+
+    .card_size {
+      max-width: 18rem; 
+      min-width: 12rem;
+      margin: 2px;
+    }
+    </style>
 </head>
 
 <body>
-  <div class="container">
-      <!-- BEGIN: Heading containing application name, statistcis title and last updated time -->
-      <div>
-        <h2>ALPHA SURVEILLANCE SYSTEM</h2>
-        <h4>DAILY STATISTICS</h4>
-        {% if data != None %}
-        <h6>LAST UPDATED: {{ data.total.timestamp }}</h6>
-        {% endif %}
-      </div>
-      <!-- END: Heading -->
-
+  <div class="container" style="background:black; padding: 50px; border-radius: 10px;">
+    <!-- BEGIN: Heading containing application name, statistcis title and last updated time -->
+    <div class="center bg_custom_black curved_border">
+      <h2>ALPHA SURVEILLANCE SYSTEM</h2>
+      <h4>DAILY STATISTICS</h4>
       {% if data != None %}
-      <!-- BEGIN: Total stats -->
-      <div class="row" style="padding-top: 10px;">
-        <div class="col">
-          <div class="card text-white bg-secondary mb-3" style="max-width: 18rem;">
-            <div class="card-header">Total</div>
-            <div class="card-body">
-              <h3 class="text-succes">Down : {{ data.total.down }}</h3>
-              <h3 class="text-dange">Up : {{ data.total.up }}</h3>
-              <h2>Up-Down Difference : {{ data.total.diff }}</h2>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- END: Total stats -->
-
-      <div class="row">
-        {% for cam_id, cam_data in data.items() %}
-        {% if cam_id != 'total' %}
-        <!-- BEGIN: Cards showing the data for each video stream -->
-        <div class="col col-md-3">
-          <div class="card border-primary mb-3" style="max-width: 18rem;">
-            <div class="card-header text-primary">{{ cam_id }}</div>
-            <div class="card-body">
-              <h3 class="text-success">Down : {{ cam_data.down }}</h3>
-              <h3 class="text-danger">Up : {{ cam_data.up }}</h3>
-            </div>
-          </div>
-        </div>
-        <!-- END: Cards -->
-        {% endif %}
-        {% endfor %}
-
-      </div>
-      {% else %}
-      <!-- BEGIN: No data section -->
-      <div class="row" style="padding-top: 10px;">
-        <div class="col">
-          <div class="card text-white bg-secondary mb-3" style="max-width: 18rem;">
-            <div class="card-body">
-              <h3 class="text-succes">No Data Available</h3>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- END: No data section -->
+      <h6>LAST UPDATED: {{ data.total.timestamp }}</h6>
       {% endif %}
+    </div>
+    <!-- END: Heading -->
+
+    {% if data != None %}
+    <!-- BEGIN: Total stats -->
+    <div class="row" style="padding-top: 10px;">
+      <div class="col">
+        <div class="card card_size text-white bg-secondary mb-3 w-50 mx-auto curved_border" style="max-width: 18rem;">
+          <div class="card-header center">Total</div>
+          <div class="card-body result_card">
+            <h3 class="text-succes">Down : {{ data.total.down }}</h3>
+            <h3 class="text-dange">Up : {{ data.total.up }}</h3>
+            <h2>Up-Down Difference : {{ data.total.diff }}</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- END: Total stats -->
+
+    <div class="row">
+      {% for cam_id, cam_data in data.items() %}
+      {% if cam_id != 'total' %}
+      <!-- BEGIN: Cards showing the data for each video stream -->
+      <div class="col col-md-4">
+        <div class="card card_size text-white bg-secondary mb-4 curved_border">
+          <div class="card-header center">{{ cam_id }}</div>
+          <div class="card-body result_card">
+            <h3 >Down : {{ cam_data.down }}</h3>
+            <h3>Up : {{ cam_data.up }}</h3>
+          </div>
+        </div>
+      </div>
+      <!-- END: Cards -->
+      {% endif %}
+      {% endfor %}
+
+    </div>
+    {% else %}
+    <!-- BEGIN: No data section -->
+    <div class="row" style="padding-top: 10px;">
+      <div class="col">
+        <div class="card card_size text-white bg-secondary mb-3w-50 mx-auto curved_border" style="max-width: 18rem;">
+          <div class="card-body result_card">
+            <h3 class="center">No Data Available</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- END: No data section -->
+    {% endif %}
   </div>
+  <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"
+    integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+    crossorigin="anonymous"></script>
+  <script src="https://use.fontawesome.com/releases/v4.7.0/js/all.js"></script>
+  <script src="{{ url_for('static', filename='js/script.js') }}" type="text/javascript"></script>
 </body>
-<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"
-  integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-  integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-<script src="https://use.fontawesome.com/releases/v4.7.0/js/all.js"></script>
-<script src="{{ url_for('static', filename='js/script.js') }}" type="text/javascript"></script>
 
 </html>
