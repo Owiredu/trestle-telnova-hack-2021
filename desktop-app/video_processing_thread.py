@@ -12,7 +12,7 @@ import imutils
 from imutils.video import FPS
 from mylib.mailer import Mailer
 from mylib import config
-import dlib, torch, datetime
+import torch, datetime # dlib
 from constants import *
 
 
