@@ -12,7 +12,7 @@ import imutils
 from imutils.video import FPS
 from mylib.mailer import Mailer
 from mylib import config
-import torch, datetime # dlib
+import torch, datetime
 from constants import *
 
 
@@ -50,8 +50,6 @@ class VideoCaptureThread(QThread):
         # boolean to turn on/off people counting
         self.counting_enabled = False
         # object detection and tracking variables
-        # self.prototxt = self.resource_path('mobilenet_ssd' + os.sep + 'MobileNetSSD_deploy.prototxt')
-        # self.model = self.resource_path('mobilenet_ssd' + os.sep + 'MobileNetSSD_deploy.caffemodel')
         self.confidence = 0.5
         self.skip_frames = 10
         # self.net = cv2.dnn.readNetFromCaffe(self.prototxt, self.model)
@@ -345,8 +343,6 @@ class VideoCaptureThread(QThread):
                             # set the status and initialize our new set of object trackers
                             status = "Detecting"
                             self.trackers = []
-
-                            ############################# BEGIN::DETECTION WITH YOLOV5 MODEL #############################
                             
                             # perform detection on frame
                             results = self.net(frame)
@@ -373,72 +369,12 @@ class VideoCaptureThread(QThread):
                                     # for the object
                                     startX, startY, endX, endY = int(xmin), int(ymin), int(xmax), int(ymax)
 
-                                    # construct a dlib rectangle object from the bounding
-                                    # box coordinates and then start the dlib correlation
-                                    # tracker
-                                    # tracker = dlib.correlation_tracker()
-                                    # rect = dlib.rectangle(startX, startY, endX, endY)
-                                    # tracker.start_track(rgb_image, rect)
-
-                                    # TODO: FOR CSRT TRACKER
+                                    # create the tracker
                                     csrt_tracker = cv2.TrackerCSRT_create()
                                     csrt_tracker.init(rgb_image, (startX, startY, endX - startX, endY - startY))
-                                    # TODO: END OF CSRT TRACKER
 
-                                    # add the tracker to our list of trackers so we can
-                                    # utilize it during skip frames
-                                    # self.trackers.append(tracker)
-
-                                    # TODO: FOR CSRT TRACKER
+                                    # add the tracker to the list of trackers
                                     self.trackers.append(csrt_tracker)
-                                    # TODO: END OF CSRT TRACKER
-
-                            ############################# END::DETECTION WITH YOLOV5 MODEL #############################
-
-
-                            ############################# BEGIN::DETECTION WITH CAFFE MODEL #############################
-
-                            # # convert the frame to a blob and pass the blob through the
-                            # # network and obtain the detections
-                            # blob = cv2.dnn.blobFromImage(frame, 0.007843, (self.desired_width, self.desired_height), 127.5)
-                            # self.net.setInput(blob)
-                            # detections = self.net.forward()
-
-                            # # loop over the detections
-                            # for i in np.arange(0, detections.shape[2]):
-                            #     # extract the confidence (i.e., probability) associated
-                            #     # with the prediction
-                            #     confidence = detections[0, 0, i, 2]
-
-                            #     # filter out weak detections by requiring a minimum
-                            #     # confidence
-                            #     if confidence > self.confidence:
-                            #         # extract the index of the class label from the
-                            #         # detections list
-                            #         idx = int(detections[0, 0, i, 1])
-
-                            #         # if the class label is not a person, ignore it
-                            #         if CLASSES[idx] != "person":
-                            #             continue
-
-                            #         # compute the (x, y)-coordinates of the bounding box
-                            #         # for the object
-                            #         box = detections[0, 0, i, 3:7] * np.array([self.desired_width, self.desired_height, self.desired_width, self.desired_height])
-                            #         (startX, startY, endX, endY) = box.astype("int")
-
-
-                            #         # construct a dlib rectangle object from the bounding
-                            #         # box coordinates and then start the dlib correlation
-                            #         # tracker
-                            #         tracker = dlib.correlation_tracker()
-                            #         rect = dlib.rectangle(startX, startY, endX, endY)
-                            #         tracker.start_track(rgb_image, rect)
-
-                            #         # add the tracker to our list of trackers so we can
-                            #         # utilize it during skip frames
-                            #         self.trackers.append(tracker)
-
-                            ############################# END::DETECTION WITH CAFFE MODEL #############################
 
                                 QApplication.processEvents()
 
@@ -450,16 +386,6 @@ class VideoCaptureThread(QThread):
                                 # set the status of our system to be 'tracking' rather
                                 # than 'waiting' or 'detecting'
                                 status = "Tracking"
-
-                                # # update the tracker and grab the updated position
-                                # tracker.update(rgb_image)
-                                # pos = tracker.get_position()
-
-                                # # unpack the position object
-                                # startX = int(pos.left())
-                                # startY = int(pos.top())
-                                # endX = int(pos.right())
-                                # endY = int(pos.bottom())
 
                                 # grab the new bounding box coordinates of the object
                                 (success, box) = tracker.update(rgb_image)
