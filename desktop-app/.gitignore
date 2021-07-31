@@ -2,3 +2,4 @@
 **/__pycache__/
 **/.vscode/
 **/retrained_models/
+**/mobilenet_ssd/
