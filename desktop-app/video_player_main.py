@@ -240,3 +240,7 @@ class VideoPlayer(QMainWindow):
         # press the left arrow key to move backwarrd by 5 seconds
         elif key_pressed == Qt.Key_Left:
             self.backward()
+
+    def closeEvent(self, event) -> None:
+        self.manual_stop()
+        return super().closeEvent(event)
